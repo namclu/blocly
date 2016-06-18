@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="text_green">#1dd323</color>
+    <color name="background_green">#256D1B</color>
+
+    <style name="HelloWorldFont">
+        <item name="android:textSize">26sp</item>
+        <item name="android:padding">20dp</item>
+        <item name="android:background">@color/accent</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+    <style name="HelloWorldFont.Green">
+        <item name="android:textColor">@color/text_green</item>
+        <item name="android:background">@color/background_green</item>
+    </style>
+    <style name="HelloWorldFont.Text_Large">
+        <item name="android:textSize">40sp</item>
+        <item name="android:background">@color/windowBackground</item>
+    </style>
+    <style name="HelloWorldFont.Green.Text_Large">
+        <item name="android:textSize">40sp</item>
+    </style>
+</resources>

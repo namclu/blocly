@@ -5,10 +5,27 @@
               android:layout_height="match_parent">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        style="@style/HelloWorldFont"
         android:text="Hello, world!"
-        android:textSize="26sp"
-        android:gravity="center"
-        android:layout_gravity="center"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/HelloWorldFont.Green"
+        android:text="Hello, green world!"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/HelloWorldFont.Text_Large"
+        android:text="Hello, large world!"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/HelloWorldFont.Green.Text_Large"
+        android:text="Hello, green + large world!"/>
 </LinearLayout>
