@@ -2,6 +2,7 @@ package io.bloc.android.blocly.ui.activity;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import io.bloc.android.blocly.BloclyApplication;
@@ -17,5 +18,7 @@ public class BloclyActivity extends Activity {
         setContentView(R.layout.activity_blocly);
         Toast.makeText(this, BloclyApplication.getSharedDataSource().getFeeds().get(0).getTitle(),
                 Toast.LENGTH_LONG).show();
+        TextView textView = (TextView)findViewById(R.id.hello_text_view);
+        textView.setText("RSS Feed");
     }
 }
