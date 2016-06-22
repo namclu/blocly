@@ -40,7 +40,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         return BloclyApplication.getSharedDataSource().getItems().size();
     }
 
-    // When to use an inner class?
+    // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
     // Inner class responsible for representing a single View created and returned by an Adapter
     class ItemAdapterViewHolder extends RecyclerView.ViewHolder{
 
