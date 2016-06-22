@@ -19,6 +19,6 @@ public class BloclyActivity extends Activity {
         Toast.makeText(this, BloclyApplication.getSharedDataSource().getFeeds().get(0).getTitle(),
                 Toast.LENGTH_LONG).show();
         TextView textView = (TextView)findViewById(R.id.hello_text_view);
-        textView.setText("RSS Feed");
+        textView.setText(BloclyApplication.getSharedDataSource().getFeeds().get(0).getTitle());
     }
 }
