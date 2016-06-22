@@ -19,10 +19,14 @@ public class BloclyApplication extends Application {
         return sharedInstance;
     }
 
+    //What does this method return?
+    //Called by ItemAdapter.getItemCount()
     public static DataSource getSharedDataSource(){
         return BloclyApplication.getSharedInstance().getDataSource();
     }
 
+    //What does this method return?
+    //Called by BloclyApplication.getSharedDataSource()
     public DataSource getDataSource(){
         return dataSource;
     }

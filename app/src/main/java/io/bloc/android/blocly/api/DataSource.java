@@ -9,7 +9,9 @@ import io.bloc.android.blocly.api.model.RssItem;
 /**
  * Created by namlu on 18-Jun-16.
  *
- * DataSource maintains a list of all the feeds and items in our application
+ * DataSource maintains a list of all the feeds and items in our application.
+ * With a single class responsible for data, the remainder of our application will
+ * never have to create or destroy data.
  */
 public class DataSource {
     private List<RssFeed> feeds;
