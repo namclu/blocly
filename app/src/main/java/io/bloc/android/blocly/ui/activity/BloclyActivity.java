@@ -23,7 +23,7 @@ public class BloclyActivity extends Activity {
 
         itemAdapter = new ItemAdapter();
 
-        // A reference to the inflated RecyclerView instance
+        // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
