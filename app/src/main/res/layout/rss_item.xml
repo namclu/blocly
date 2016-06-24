@@ -21,7 +21,7 @@
         android:text="New York Times"/>
     
     <io.bloc.android.blocly.ui.widget.RobotoTextView
-        style="@style/Body1"
+        style="@style/Body2"
         android:id="@+id/tv_rss_item_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
