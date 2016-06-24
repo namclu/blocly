@@ -4,33 +4,29 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp">
     
-    <TextView
+    <io.bloc.android.blocly.ui.widget.RobotoTextView
+        style="@style/Headline"
         android:id="@+id/tv_rss_item_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New York Attacked by Giant Squid"
-        android:textSize="18sp"
-        android:textColor="@color/text_primary"/>
+        android:text="New York Attacked by Giant Squid"/>
     
-    <TextView
+    <io.bloc.android.blocly.ui.widget.RobotoTextView
+        style="@style/Caption"
         android:id="@+id/tv_rss_item_feed_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tv_rss_item_title"
         android:layout_marginTop="8dp"
-        android:text="New York Times"
-        android:singleLine="true"
-        android:textSize="14sp"
-        android:textColor="@color/text_secondary"/>
+        android:text="New York Times"/>
     
-    <TextView
+    <io.bloc.android.blocly.ui.widget.RobotoTextView
+        style="@style/Body1"
         android:id="@+id/tv_rss_item_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_rss_item_feed_title"
         android:text="A giant squid appeared abruptly today in lower Manhattan. The squid appeared peaceful at first but violence quickly escalated after a tourist attempted to have their photo taken with the \'big city octopus\'."
-        android:layout_marginTop="8dp"
-        android:textSize="14sp"
-        android:textColor="@color/text_primary"/>
+        android:layout_marginTop="8dp"/>
 
 </RelativeLayout>
