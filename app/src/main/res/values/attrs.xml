@@ -21,6 +21,14 @@
             <enum name="CondensedLightItalic" value="16"/>
             <enum name="CondensedRegular" value="17"/>
         </attr>
+
+        <attr name="condensed" format="enum">
+            <enum name=""/>
+        </attr>
+
+        <attr name="robotoStyle" format="enum">
+
+        </attr>
         
     </declare-styleable>
 </resources>

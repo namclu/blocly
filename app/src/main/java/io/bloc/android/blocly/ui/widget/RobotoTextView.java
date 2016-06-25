@@ -36,9 +36,9 @@ public class RobotoTextView extends TextView{
         extractFont(attrs);
     }
 
-    //Checks to see if RobotoTextview is being previewed in a WYSIWYG editor
     void extractFont(AttributeSet attrs) {
 
+        //Checks to see if RobotoTextview is being previewed in a WYSIWYG editor
         if(isInEditMode()){
             return;
         }
