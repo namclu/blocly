@@ -3,12 +3,34 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp">
+
+    <FrameLayout
+        android:id="@+id/fl_rss_item_image_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateOnly="true"
+            android:indeterminate="true"/>
+
+        <ImageView
+            android:id="@+id/iv_rss_item_image"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:scaleType="centerCrop"/>
+
+    </FrameLayout>
     
     <io.bloc.android.blocly.ui.widget.RobotoTextView
         style="@style/Headline"
         android:id="@+id/tv_rss_item_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/fl_rss_item_image_header"
         android:text="New York Attacked by Giant Squid"/>
     
     <io.bloc.android.blocly.ui.widget.RobotoTextView

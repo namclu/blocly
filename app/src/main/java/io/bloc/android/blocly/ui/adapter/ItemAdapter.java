@@ -1,10 +1,17 @@
 package io.bloc.android.blocly.ui.adapter;
 
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
@@ -15,7 +22,9 @@ import io.bloc.android.blocly.api.model.RssItem;
 /**
  * Created by namlu on 20-Jun-16.
  */
-public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder>{
+public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
+
+    private static String TAG = ItemAdapter.class.getSimpleName();
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -42,11 +51,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
     // Inner class responsible for representing a single View created and returned by an Adapter
-    class ItemAdapterViewHolder extends RecyclerView.ViewHolder{
+    class ItemAdapterViewHolder extends RecyclerView.ViewHolder implements ImageLoadingListener{
 
         TextView title;
         TextView feed;
         TextView content;
+        View headerWrapper;
+        ImageView headerImage;
+        String imageURL;
 
         public ItemAdapterViewHolder(View itemView){
             //itemView is a reference to inflated version of rss_item.xml
@@ -54,12 +66,55 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             title = (TextView)itemView.findViewById(R.id.tv_rss_item_feed_title);
             feed = (TextView)itemView.findViewById(R.id.tv_rss_item_feed_title);
             content = (TextView)itemView.findViewById(R.id.tv_rss_item_content);
+            // Assign the inflated FrameLayout View to a basic View field
+            headerWrapper = itemView.findViewById(R.id.fl_rss_item_image_header);
+            headerImage = (ImageView) itemView.findViewById(R.id.iv_rss_item_image);
         }
 
         void update(RssFeed rssFeed, RssItem rssItem){
             feed.setText(rssFeed.getTitle());
             title.setText(rssItem.getTitle());
             content.setText(rssItem.getDescription());
+            imageURL = rssItem.getImageUrl();
+            // If the RssItem has an image URL, make visible the FrameLayout
+            if(imageURL != null){
+                headerWrapper.setVisibility(View.VISIBLE);
+                headerImage.setVisibility(View.INVISIBLE);
+                // Attempt to load the image
+                // loadImage(String url, ImageLoadingListener listener)
+                ImageLoader.getInstance().loadImage(imageURL, this);
+            } else{
+                headerWrapper.setVisibility(View.GONE);
+            }
+        }
+
+        // Called when image loading task was started
+        @Override
+        public void onLoadingStarted(String imageUri, View view) {
+
+        }
+
+        // Called when an error has occurred during image loading
+        @Override
+        public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+            // .e(String tag, String msg)
+            Log.e(TAG, "onLoadingFailed: " + failReason.toString() + " for URL: " + imageURL);
+        }
+
+        // Called when image is loaded successfully (and displayed in View if one was specified)
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            if(imageUri.equals(imageURL)){
+                headerImage.setImageBitmap(loadedImage);
+                headerImage.setVisibility(View.VISIBLE);
+            }
+        }
+
+        // Call when image loading task was cancelled because View for image was reused in newer task
+        @Override
+        public void onLoadingCancelled(String imageUri, View view) {
+            // Attempt a retry
+            ImageLoader.getInstance().loadImage(imageURL, this);
         }
     }
 

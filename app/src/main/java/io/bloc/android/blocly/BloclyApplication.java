@@ -42,26 +42,26 @@ public class BloclyApplication extends Application {
         super.onCreate();
         sharedInstance = this;
         dataSource = new DataSource();
+
+        // DisplayImageOptions class is composed of settings which pertain to each image loading request
+        // We create a default instance of these options to be used each time Blocly requests an image.
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
+                .cacheOnDisk(true)
+                .cacheInMemory(true)
+                .build();
+
+        // Create global configuration and initialize ImageLoader with this config
+        ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this)
+                .tasksProcessingOrder(QueueProcessingType.LIFO)
+                .denyCacheImageMultipleSizesInMemory()
+                .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
+                .memoryCacheSize(2 * 1024 * 1024)
+                .diskCacheSize(50 * 1024 * 1024)
+                .diskCacheFileCount(100)
+                .defaultDisplayImageOptions(defaultOptions)
+                .build();
+
+        // Returns singleton class instance
+        ImageLoader.getInstance().init(configuration);
     }
-
-    // DisplayImageOptions class is composed of settings which pertain to each image loading request
-    // We create a default instance of these options to be used each time Blocly requests an image.
-    DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder()
-            .cacheOnDisk(true)
-            .cacheInMemory(true)
-            .build();
-
-    // Create global configuration and initialize ImageLoader with this config
-    ImageLoaderConfiguration configuration = new ImageLoaderConfiguration.Builder(this)
-            .tasksProcessingOrder(QueueProcessingType.LIFO)
-            .denyCacheImageMultipleSizesInMemory()
-            .memoryCache(new LruMemoryCache(2 * 1024 * 1024))
-            .memoryCacheSize(2 * 1024 * 1024)
-            .diskCacheSize(50 * 1024 * 1024)
-            .diskCacheFileCount(100)
-            .defaultDisplayImageOptions(defaultOptions)
-            .build();
-
-    // Returns singleton class instance
-    ImageLoader.getInstance().init(configuration);
 }
