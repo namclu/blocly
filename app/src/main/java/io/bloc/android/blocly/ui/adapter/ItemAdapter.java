@@ -91,7 +91,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         // Called when image loading task was started
         @Override
         public void onLoadingStarted(String imageUri, View view) {
-
+            Log.d(TAG, "Inside onLoadingStarted() method");
         }
 
         // Called when an error has occurred during image loading
