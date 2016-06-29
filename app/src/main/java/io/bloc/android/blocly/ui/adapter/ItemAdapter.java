@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -51,14 +52,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
     // Inner class responsible for representing a single View created and returned by an Adapter
-    class ItemAdapterViewHolder extends RecyclerView.ViewHolder implements ImageLoadingListener{
+    class ItemAdapterViewHolder extends RecyclerView.ViewHolder implements ImageLoadingListener,
+            View.OnClickListener{
 
         TextView title;
         TextView feed;
         TextView content;
         View headerWrapper;
         ImageView headerImage;
-        String imageURL;
+        // Reference to RssItem to act on the data associated with each ItemAdapterViewHolder
+        RssItem rssItem;
 
         public ItemAdapterViewHolder(View itemView){
             //itemView is a reference to inflated version of rss_item.xml
@@ -69,24 +72,31 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             // Assign the inflated FrameLayout View to a basic View field
             headerWrapper = itemView.findViewById(R.id.fl_rss_item_image_header);
             headerImage = (ImageView) itemView.findViewById(R.id.iv_rss_item_image);
+            // A single itemView maps to a single ViewHolder, and this pair of objects is reused
+            // and recycled to accommodate larger sets of data
+            // setOnClickListener(onClickListener 1)
+            itemView.setOnClickListener(this);
         }
 
         void update(RssFeed rssFeed, RssItem rssItem){
+            this.rssItem = rssItem;
             feed.setText(rssFeed.getTitle());
             title.setText(rssItem.getTitle());
             content.setText(rssItem.getDescription());
-            imageURL = rssItem.getImageUrl();
-            // If the RssItem has an image URL, make visible the FrameLayout
-            if(imageURL != null){
+            if(rssItem.getImageUrl() != null){
                 headerWrapper.setVisibility(View.VISIBLE);
                 headerImage.setVisibility(View.INVISIBLE);
                 // Attempt to load the image
                 // loadImage(String url, ImageLoadingListener listener)
-                ImageLoader.getInstance().loadImage(imageURL, this);
+                ImageLoader.getInstance().loadImage(rssItem.getImageUrl(), this);
             } else{
                 headerWrapper.setVisibility(View.GONE);
             }
         }
+
+         /*
+        * ImageLoadingListener starts here
+        * */
 
         // Called when image loading task was started
         @Override
@@ -98,13 +108,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
             // .e(String tag, String msg)
-            Log.e(TAG, "onLoadingFailed: " + failReason.toString() + " for URL: " + imageURL);
+            Log.e(TAG, "onLoadingFailed: " + failReason.toString() + " for URL: " + rssItem.getImageUrl());
         }
 
         // Called when image is loaded successfully (and displayed in View if one was specified)
         @Override
         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-            if(imageUri.equals(imageURL)){
+            if(imageUri.equals(rssItem.getImageUrl())){
                 headerImage.setImageBitmap(loadedImage);
                 headerImage.setVisibility(View.VISIBLE);
             }
@@ -114,7 +124,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onLoadingCancelled(String imageUri, View view) {
             // Attempt a retry
-            ImageLoader.getInstance().loadImage(imageURL, this);
+            ImageLoader.getInstance().loadImage(imageUri, this);
+        }
+
+        /*
+        * onClickListener starts here
+        * */
+
+        @Override
+        // Abstract and only method of View.OnClickListener
+        public void onClick(View view) {
+            // makeText(Context context, CharSequence text, int duration).show();
+            Toast.makeText(view.getContext(), rssItem.getTitle(), Toast.LENGTH_SHORT).show();
         }
     }
 
