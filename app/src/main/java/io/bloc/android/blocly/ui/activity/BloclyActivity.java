@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
@@ -15,6 +16,7 @@ import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 public class BloclyActivity extends Activity {
 
     private ItemAdapter itemAdapter;
+    private static String TAG = BloclyActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +24,13 @@ public class BloclyActivity extends Activity {
         setContentView(R.layout.activity_blocly);
 
         itemAdapter = new ItemAdapter();
+
+        try{
+            String myString = null;
+            System.out.println("This is my string: " + myString);
+        }catch (Exception e){
+            Log.e(TAG, "called from onCreate()", e);
+        }
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
