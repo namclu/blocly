@@ -153,6 +153,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
+            // If archive button isChecked, then RssItem.archived = isChecked
+            if(buttonButton.equals(archiveCheckBox)){
+                rssItem.setArchived(isChecked);
+            }
+            if(buttonButton.equals(favoriteCheckBox)){
+                rssItem.setFavorite(isChecked);
+            }
         }
     }
 

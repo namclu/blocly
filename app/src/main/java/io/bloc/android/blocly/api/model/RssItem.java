@@ -60,7 +60,15 @@ public class RssItem {
         return favorite;
     }
 
+    public void setFavorite(boolean favorite){
+        this.favorite = favorite;
+    }
+
     public boolean isArchived() {
         return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }
