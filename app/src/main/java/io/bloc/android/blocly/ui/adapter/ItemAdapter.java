@@ -16,9 +16,6 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -31,9 +28,6 @@ import io.bloc.android.blocly.api.model.RssItem;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
 
     private static String TAG = ItemAdapter.class.getSimpleName();
-
-    // RssItem ArrayList to keep track of which objects have been checked
-    private List<RssItem> myRssItems = new ArrayList<>();
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -110,13 +104,17 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             } else{
                 headerWrapper.setVisibility(View.GONE);
             }
-            // If rssItem.isArchived() is true, then set archiveCheckbox to checked state
+            // If rssItem.isArchived(), then set archiveCheckbox to checked state
             if(rssItem.isArchived()){
-                archiveCheckBox.setSelected(true);
+                archiveCheckBox.setChecked(true);
+            }else{
+                archiveCheckBox.setChecked(false);
             }
-            // If rssItem.isFavorite() is true, then set favoriteCheckbox to checked state
+            // If rssItem.isFavorite(), then set favoriteCheckbox to checked state
             if(rssItem.isFavorite()){
-                favoriteCheckBox.setSelected(true);
+                favoriteCheckBox.setChecked(true);
+            }else{
+                favoriteCheckBox.setChecked(false);
             }
         }
 
@@ -167,19 +165,24 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
-            // If button pressed is archiveCheckbox && isChecked is true then
-            // setArchived = true
-            if(buttonButton.equals(archiveCheckBox) && isChecked){
-                // rssItem.setArchived(isChecked);
-                rssItem.setArchived(isChecked);
+            // If isChecked, then set rssItem.setArchived or rssItem.setFavorite to true
+            if(isChecked){
+                if(buttonButton.equals(archiveCheckBox)){
+                    rssItem.setArchived(true);
+                } else if(buttonButton.equals(favoriteCheckBox)){
+                    rssItem.setFavorite(true);
+                }
             }
-            // If button pressed is favoriteCheckbox && isChecked is true then
-            // setFavorite = true
-            if(buttonButton.equals(favoriteCheckBox) && isChecked){
-                // rssItem.setFavorite(isChecked);
-                rssItem.setFavorite(isChecked);
+            // If !isChecked, then set rssItem.setArchived or rssItem.setFavorite to false
+            if(!isChecked){
+                if(buttonButton.equals(archiveCheckBox)){
+                    rssItem.setArchived(false);
+                } else if(buttonButton.equals(favoriteCheckBox)){
+                    rssItem.setFavorite(false);
+                }
             }
         }
+        
     }
 
 }
