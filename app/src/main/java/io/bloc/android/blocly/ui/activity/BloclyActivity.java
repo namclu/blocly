@@ -27,7 +27,7 @@ public class BloclyActivity extends Activity {
 
         try{
             String myString = null;
-            System.out.println("This is my string: " + myString);
+            myString.charAt(0);
         }catch (Exception e){
             Log.e(TAG, "called from onCreate()", e);
         }
