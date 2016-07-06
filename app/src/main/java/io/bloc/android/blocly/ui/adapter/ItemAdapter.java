@@ -105,17 +105,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 headerWrapper.setVisibility(View.GONE);
             }
             // If rssItem.isArchived(), then set archiveCheckbox to checked state
-            if(rssItem.isArchived()){
-                archiveCheckBox.setChecked(true);
-            }else{
-                archiveCheckBox.setChecked(false);
-            }
+            archiveCheckBox.setChecked(rssItem.isArchived());
             // If rssItem.isFavorite(), then set favoriteCheckbox to checked state
-            if(rssItem.isFavorite()){
-                favoriteCheckBox.setChecked(true);
-            }else{
-                favoriteCheckBox.setChecked(false);
-            }
+            favoriteCheckBox.setChecked(rssItem.isFavorite());
         }
 
          /*
@@ -165,21 +157,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
-            // If isChecked, then set rssItem.setArchived or rssItem.setFavorite to true
-            if(isChecked){
-                if(buttonButton.equals(archiveCheckBox)){
-                    rssItem.setArchived(true);
-                } else if(buttonButton.equals(favoriteCheckBox)){
-                    rssItem.setFavorite(true);
-                }
+            // If buttonButton pressed is archiveCheckbox, set to isChecked
+            if(buttonButton.equals(archiveCheckBox)){
+                rssItem.setArchived(isChecked);
             }
-            // If !isChecked, then set rssItem.setArchived or rssItem.setFavorite to false
-            if(!isChecked){
-                if(buttonButton.equals(archiveCheckBox)){
-                    rssItem.setArchived(false);
-                } else if(buttonButton.equals(favoriteCheckBox)){
-                    rssItem.setFavorite(false);
-                }
+            // If buttonButton pressed is favoriteCheckbox, set to isChecked
+            else if(buttonButton.equals(favoriteCheckBox)){
+                rssItem.setFavorite(isChecked);
             }
         }
 
