@@ -57,6 +57,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     class ItemAdapterViewHolder extends RecyclerView.ViewHolder implements ImageLoadingListener,
             View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
+        // Boolean to track expansion state
+        boolean contentExpanded;
         TextView title;
         TextView feed;
         TextView content;
@@ -68,22 +70,38 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         CheckBox archiveCheckBox;
         CheckBox favoriteCheckBox;
 
+        // References to our hidden Views.
+        View expandedContentWrapper;
+        TextView expandedContent;
+        TextView visitSite;
+
         public ItemAdapterViewHolder(View itemView){
             //itemView is a reference to inflated version of rss_item.xml
             super(itemView);
-            title = (TextView)itemView.findViewById(R.id.tv_rss_item_feed_title);
+            title = (TextView)itemView.findViewById(R.id.tv_rss_item_title);
             feed = (TextView)itemView.findViewById(R.id.tv_rss_item_feed_title);
             content = (TextView)itemView.findViewById(R.id.tv_rss_item_content);
             // Assign the inflated FrameLayout View to a basic View field
             headerWrapper = itemView.findViewById(R.id.fl_rss_item_image_header);
             headerImage = (ImageView) itemView.findViewById(R.id.iv_rss_item_image);
+
             // References to Checkbox views
             archiveCheckBox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_check_mark);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_favorite_star);
+
+            // Extract the hidden views
+            expandedContentWrapper = itemView.findViewById(R.id.ll_rss_item_expanded_content_wrapper);
+            expandedContent = (TextView) itemView.findViewById(R.id.tv_rss_item_content_full);
+            visitSite = (TextView) itemView.findViewById(R.id.tv_rss_item_visit_site);
+
             // A single itemView maps to a single ViewHolder, and this pair of objects is reused
             // and recycled to accommodate larger sets of data
             // setOnClickListener(onClickListener l);
             itemView.setOnClickListener(this);
+
+            // Set visitSite's onClickListener
+            visitSite.setOnClickListener(this);
+
             // Set ItemAdapterViewHolder as the OnCheckedChangeListener for both check boxes
             // setOnCheckedChangeListener(onCheckChangeListener listener);
             archiveCheckBox.setOnCheckedChangeListener(this);
@@ -92,9 +110,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
         void update(RssFeed rssFeed, RssItem rssItem){
             this.rssItem = rssItem;
-            feed.setText(rssFeed.getTitle());
             title.setText(rssItem.getTitle());
+            feed.setText(rssFeed.getTitle());
+
+            // content and expandedContent will present the same text: the RSS item's story
             content.setText(rssItem.getDescription());
+            expandedContent.setText(rssItem.getDescription());
+
             if(rssItem.getImageUrl() != null){
                 headerWrapper.setVisibility(View.VISIBLE);
                 headerImage.setVisibility(View.INVISIBLE);
@@ -146,8 +168,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         // Abstract and only method of View.OnClickListener
         public void onClick(View view) {
-            // makeText(Context context, CharSequence text, int duration).show();
-            Toast.makeText(view.getContext(), rssItem.getTitle(), Toast.LENGTH_SHORT).show();
+
+            if(view == itemView){
+                contentExpanded = !contentExpanded;
+                expandedContentWrapper.setVisibility(contentExpanded ? View.VISIBLE : View.GONE);
+                content.setVisibility(contentExpanded ? View.GONE : View.VISIBLE);
+            } else{
+                // Clicking visitSite will show a Toast.
+                // makeText(Context context, CharSequence text, int duration).show();
+                Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override
