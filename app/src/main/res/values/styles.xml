@@ -34,4 +34,11 @@
         <item name="robotoFont">Medium</item>
     </style>
 
+    <style name="RobotoButton">
+        <item name="android:textColor">@drawable/btn_background_ripple</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="robotoFont">Medium</item>
+    </style>
+
 </resources>
