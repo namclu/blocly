@@ -1,11 +1,13 @@
 package io.bloc.android.blocly.ui.adapter;
 
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -170,9 +172,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                contentExpanded = !contentExpanded;
-                expandedContentWrapper.setVisibility(contentExpanded ? View.VISIBLE : View.GONE);
-                content.setVisibility(contentExpanded ? View.GONE : View.VISIBLE);
+                animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
@@ -183,6 +183,93 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
+        }
+
+        /*
+        * Private methods
+        * */
+
+        // The purpose of animateContent is to expand or contract content
+        private void animateContent(final boolean expand){
+
+            //  If RSS item is already in the desired state, simply return
+            if((expand && contentExpanded) || (!expand && !contentExpanded)){
+                return;
+            }
+
+            // If we must animate, create initial and final height variables to animate between
+            int startingHeight = expandedContentWrapper.getMeasuredHeight();
+            int finalHeight = content.getMeasuredHeight();
+
+            if(expand){
+                // When expanding, set the starting height to that of the preview content
+                // Make full-length content visible but transparent and then animate from
+                // full transparency to full opacity.
+                startingHeight = finalHeight;
+                expandedContentWrapper.setAlpha(0f);
+                expandedContentWrapper.setVisibility(View.VISIBLE);
+
+                // To determine the target height of expansion, invoke View's measure(int, int)
+                // method, which asks a View to measure itself given the constraints provided
+                // We constrain it to the width of content but leave its height unlimited.
+                // .measure(int widthMeasureSpec, int heightMeasureSpec)
+                // .makeMeasureSpec(int size, int mode)
+                expandedContentWrapper.measure(
+                        View.MeasureSpec.makeMeasureSpec(content.getWidth(), View.MeasureSpec.EXACTLY),
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                // getMeasuredHeight() provides the height (in pixels) that expandedContentWrapper wishes to be
+                finalHeight = expandedContentWrapper.getMeasuredHeight();
+            } else {
+                content.setVisibility(View.VISIBLE);
+            }
+
+            //  AnimatorUpdateListener receives updates during an animation
+            startAnimator(startingHeight, finalHeight, new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                // An animation's progress is between 0.0 and 1.0.
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    // Percent completion used to set the opacity level acts as
+                    // a cross-fade from one View to the other
+                    float animatedFraction = valueAnimator.getAnimatedFraction();
+                    float wrapperAlpha = expand ? animatedFraction : 1f - animatedFraction;
+                    float contentAlpha = 1f - wrapperAlpha;
+
+                    expandedContentWrapper.setAlpha(wrapperAlpha);
+                    content.setAlpha(contentAlpha);
+                    // LayoutParams define a View's width and height programmatically
+                    // When the animation completes – animatedFraction == 1.0f
+                    // we revert the height to WRAP_CONTENT, as defined in rss_item.xml
+                    expandedContentWrapper.getLayoutParams().height = animatedFraction == 1f ?
+                            ViewGroup.LayoutParams.WRAP_CONTENT :
+                            (Integer) valueAnimator.getAnimatedValue();
+
+                    // Once finished altering the View's LayoutParams, we invoke requestLayout(),
+                    // which asks the View to redraw itself on screen.
+                    expandedContentWrapper.requestLayout();
+                    if(animatedFraction == 1f){
+                        if(expand){
+                            content.setVisibility(View.GONE);
+                        } else{
+                            expandedContentWrapper.setVisibility(View.GONE);
+                        }
+                    }
+                }
+            });
+            contentExpanded = expand;
+        }
+
+        private void startAnimator(int start, int end, ValueAnimator.AnimatorUpdateListener animatorUpdateListener){
+            ValueAnimator valueAnimator =  ValueAnimator.ofInt(start, end);
+            valueAnimator.addUpdateListener(animatorUpdateListener);
+
+            // Set the duration of animation
+            // Android is bundled with its own value resources, any application may access them
+            // by referring to android.R...
+            valueAnimator.setDuration(itemView.getResources().getInteger(android.R.integer.config_mediumAnimTime));
+
+            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            valueAnimator.start();
         }
     }
 
