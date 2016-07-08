@@ -24,7 +24,7 @@ public class RobotoTextView extends TextView{
         super(context);
     }
 
-    //Required public constructor #3
+    //Required public constructor #2
     public RobotoTextView(Context context, AttributeSet attrs){
         super(context, attrs);
         extractFont(attrs);

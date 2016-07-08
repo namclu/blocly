@@ -93,7 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <io.bloc.android.blocly.ui.widget.RobotoTextView
+        <io.bloc.android.blocly.ui.widget.RobotoButton
             style="@style/RobotoButton"
             android:id="@+id/tv_rss_item_visit_site"
             android:text="@string/visit_site"

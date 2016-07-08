@@ -34,8 +34,9 @@
         <item name="robotoFont">Medium</item>
     </style>
 
-    <style name="RobotoButton">
-        <item name="android:textColor">@drawable/btn_background_ripple</item>
+    <style name="RobotoButton" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">@drawable/btn_text_drawable</item>
+        <item name="android:background">@drawable/btn_background_ripple</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="robotoFont">Medium</item>
