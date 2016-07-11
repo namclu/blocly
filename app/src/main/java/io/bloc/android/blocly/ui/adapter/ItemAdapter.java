@@ -148,6 +148,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
             // .e(String tag, String msg)
+            animateImage(!imageExpanded);
             Log.e(TAG, "onLoadingFailed: " + failReason.toString() + " for URL: " + rssItem.getImageUrl());
         }
 
@@ -158,6 +159,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 headerImage.setImageBitmap(loadedImage);
                 headerImage.setVisibility(View.VISIBLE);
             }
+            animateImage(imageExpanded);
         }
 
         // Call when image loading task was cancelled because View for image was reused in newer task
@@ -176,7 +178,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                animateImage(!contentExpanded);
+                //animateImage(!imageExpanded);
+                animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
@@ -272,17 +275,16 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             }
 
             // If we must animate, create initial and final height variables to animate between
-            /*int startingHeight = headerWrapper.getMeasuredHeight();*/
-            int startingHeight = headerWrapper.getMeasuredHeight();
-            int finalHeight = 0;
+            int startingHeight = 0;
+            int finalHeight = headerImage.getMeasuredHeight();
 
             if(expand){
                 // When expanding, set the starting height to that of the preview content
                 // Make full-length content visible but transparent and then animate from
                 // full transparency to full opacity.
-                //startingHeight = finalHeight;
-                headerWrapper.setAlpha(1f);
-                headerWrapper.setVisibility(View.INVISIBLE);
+                startingHeight = finalHeight;
+                headerWrapper.setAlpha(0f);
+                headerWrapper.setVisibility(View.VISIBLE);
 
                 // To determine the target height of expansion, invoke View's measure(int, int)
                 // method, which asks a View to measure itself given the constraints provided
@@ -294,9 +296,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
                 // getMeasuredHeight() provides the height (in pixels) that expandedContentWrapper wishes to be
-                finalHeight = 0;
+                finalHeight = headerWrapper.getMeasuredHeight();
             } else {
-                headerImage.setVisibility(View.INVISIBLE);
+                headerImage.setVisibility(View.VISIBLE);
             }
 
             //  AnimatorUpdateListener receives updates during an animation
@@ -326,7 +328,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                         if(expand){
                             headerImage.setVisibility(View.GONE);
                         } else{
-                            headerImage.setVisibility(View.VISIBLE);
+                            headerWrapper.setVisibility(View.GONE);
                         }
                     }
                 }
