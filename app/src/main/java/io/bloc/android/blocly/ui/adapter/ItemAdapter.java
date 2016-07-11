@@ -18,6 +18,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.sql.Wrapper;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -61,6 +63,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
         // Boolean to track expansion state
         boolean contentExpanded;
+        boolean imageExpanded;
+
         TextView title;
         TextView feed;
         TextView content;
@@ -172,7 +176,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                animateContent(!contentExpanded);
+                animateImage(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
@@ -257,6 +261,77 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 }
             });
             contentExpanded = expand;
+        }
+
+        // The purpose of animateImage is to expand or contract content
+        private void animateImage(final boolean expand){
+
+            //  If RSS item is already in the desired state, simply return
+            if((expand && imageExpanded) || (!expand && !imageExpanded)){
+                return;
+            }
+
+            // If we must animate, create initial and final height variables to animate between
+            /*int startingHeight = headerWrapper.getMeasuredHeight();*/
+            int startingHeight = headerWrapper.getMeasuredHeight();
+            int finalHeight = 0;
+
+            if(expand){
+                // When expanding, set the starting height to that of the preview content
+                // Make full-length content visible but transparent and then animate from
+                // full transparency to full opacity.
+                //startingHeight = finalHeight;
+                headerWrapper.setAlpha(1f);
+                headerWrapper.setVisibility(View.INVISIBLE);
+
+                // To determine the target height of expansion, invoke View's measure(int, int)
+                // method, which asks a View to measure itself given the constraints provided
+                // We constrain it to the width of content but leave its height unlimited.
+                // .measure(int widthMeasureSpec, int heightMeasureSpec)
+                // .makeMeasureSpec(int size, int mode)
+                headerWrapper.measure(
+                        View.MeasureSpec.makeMeasureSpec(headerImage.getWidth(), View.MeasureSpec.EXACTLY),
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                // getMeasuredHeight() provides the height (in pixels) that expandedContentWrapper wishes to be
+                finalHeight = 0;
+            } else {
+                headerImage.setVisibility(View.INVISIBLE);
+            }
+
+            //  AnimatorUpdateListener receives updates during an animation
+            startAnimator(startingHeight, finalHeight, new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                // An animation's progress is between 0.0 and 1.0.
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    // Percent completion used to set the opacity level acts as
+                    // a cross-fade from one View to the other
+                    float animatedFraction = valueAnimator.getAnimatedFraction();
+                    float wrapperAlpha = expand ? animatedFraction : 1f - animatedFraction;
+                    float contentAlpha = 1f - wrapperAlpha;
+
+                    headerWrapper.setAlpha(wrapperAlpha);
+                    headerImage.setAlpha(contentAlpha);
+                    // LayoutParams define a View's width and height programmatically
+                    // When the animation completes – animatedFraction == 1.0f
+                    // we revert the height to WRAP_CONTENT, as defined in rss_item.xml
+                    headerWrapper.getLayoutParams().height = animatedFraction == 1f ?
+                            ViewGroup.LayoutParams.WRAP_CONTENT :
+                            (Integer) valueAnimator.getAnimatedValue();
+
+                    // Once finished altering the View's LayoutParams, we invoke requestLayout(),
+                    // which asks the View to redraw itself on screen.
+                    headerWrapper.requestLayout();
+                    if(animatedFraction == 1f){
+                        if(expand){
+                            headerImage.setVisibility(View.GONE);
+                        } else{
+                            headerImage.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            });
+            imageExpanded = expand;
         }
 
         private void startAnimator(int start, int end, ValueAnimator.AnimatorUpdateListener animatorUpdateListener){
