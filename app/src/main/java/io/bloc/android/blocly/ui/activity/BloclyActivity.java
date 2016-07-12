@@ -2,6 +2,7 @@ package io.bloc.android.blocly.ui.activity;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -56,6 +57,7 @@ public class BloclyActivity extends AppCompatActivity {
     // Call syncState() to synchronize the indicator with the state of the linked DrawerLayout
     protected void onPostCreate(Bundle savedInstanceState){
         super.onPostCreate(savedInstanceState);
+        drawerLayout.openDrawer(GravityCompat.START);
         drawerToggle.syncState();
     }
 
