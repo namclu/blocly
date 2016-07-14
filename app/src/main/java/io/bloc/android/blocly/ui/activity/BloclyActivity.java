@@ -13,6 +13,7 @@ import android.view.MenuItem;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
+import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
@@ -23,6 +24,8 @@ public class BloclyActivity extends AppCompatActivity {
     // Add to use DrawerLayout
     private ActionBarDrawerToggle drawerToggle;
     private DrawerLayout drawerLayout;
+    // Add to use NavigationDrawer
+    private NavigationDrawerAdapter navigationDrawerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,13 +37,21 @@ public class BloclyActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         itemAdapter = new ItemAdapter();
+        navigationDrawerAdapter = new NavigationDrawerAdapter();
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
+        RecyclerView navigationRecyclerView = (RecyclerView) findViewById(R.id.rv_nav_activity_blocly);
 
+        // Set the layout, animator, and adapter for recyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(itemAdapter);
+
+        // Set the layout, animator, and adapter for navigationRecyclerView
+        navigationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        navigationRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        navigationRecyclerView.setAdapter(navigationDrawerAdapter);
 
         // Recover the instance of ActionBar associated with ToolBar
         // and invoke setDisplayHomeAsUpEnabled(boolean) to allow this behavior

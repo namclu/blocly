@@ -24,7 +24,7 @@ public class RobotoTextView extends TextView{
         super(context);
     }
 
-    //Required public constructor #3
+    //Required public constructor #2
     public RobotoTextView(Context context, AttributeSet attrs){
         super(context, attrs);
         extractFont(attrs);
@@ -36,7 +36,7 @@ public class RobotoTextView extends TextView{
         extractFont(attrs);
     }
 
-    //Checks to see if RobotoTextview is being previewed in a WYSIWYG editor
+    //Checks to see if RobotoTextView is being previewed in a WYSIWYG editor
     void extractFont(AttributeSet attrs) {
 
         if(isInEditMode()){
