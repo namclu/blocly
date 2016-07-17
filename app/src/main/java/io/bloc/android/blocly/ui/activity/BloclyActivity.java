@@ -10,21 +10,23 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import io.bloc.android.blocly.R;
+import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends AppCompatActivity {
+public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
     private ActionBarDrawerToggle drawerToggle;
     private DrawerLayout drawerLayout;
-    // Add to use NavigationDrawer
+    // Add an instance of NavigationDrawerAdapter
     private NavigationDrawerAdapter navigationDrawerAdapter;
 
     @Override
@@ -38,6 +40,9 @@ public class BloclyActivity extends AppCompatActivity {
 
         itemAdapter = new ItemAdapter();
         navigationDrawerAdapter = new NavigationDrawerAdapter();
+
+        // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
+        navigationDrawerAdapter.setDelegate(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
@@ -88,5 +93,22 @@ public class BloclyActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /*NavigationDrawerAdapter Delegate*/
+
+    @Override
+    // DrawerLayout is managed by BloclyActivity, not NavigationDrawerAdapter, therefore
+    // BloclyActivity is responsible for closing the DrawerLayout
+    public void didSelectNavigationOption(NavigationDrawerAdapter adapter,
+                                          NavigationDrawerAdapter.NavigationOption navigationOption) {
+        drawerLayout.closeDrawers();
+        Toast.makeText(this, "Show the " + navigationOption.name(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
+        drawerLayout.closeDrawers();
+        Toast.makeText(this, "Show RSS feed from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
     }
 }
