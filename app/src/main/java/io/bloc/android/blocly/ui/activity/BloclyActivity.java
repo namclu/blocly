@@ -20,7 +20,8 @@ import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
+public class BloclyActivity extends AppCompatActivity implements
+        NavigationDrawerAdapter.NavigationDrawerAdapterDelegate, ItemAdapter.ItemAdapterDelegate {
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
@@ -43,6 +44,9 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
 
         // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
         navigationDrawerAdapter.setDelegate(this);
+
+        // Set BloclyActivity (this) as ItemAdapter's delegate
+        itemAdapter.setItemAdapterDelegate(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
@@ -110,5 +114,27 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
         drawerLayout.closeDrawers();
         Toast.makeText(this, "Show RSS feed from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    /* ItemAdapter Delegate */
+
+    @Override
+    public void didExpandFeed(ItemAdapter itemAdapter, boolean contentExpanded) {
+        itemAdapter.
+    }
+
+    @Override
+    public void didVisitSite(ItemAdapter itemAdapter) {
+
+    }
+
+    @Override
+    public void didFavoriteItem(ItemAdapter itemAdapter) {
+
+    }
+
+    @Override
+    public void didArchiveItem(ItemAdapter itemAdapter) {
+
     }
 }

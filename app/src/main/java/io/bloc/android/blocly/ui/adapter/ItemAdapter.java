@@ -18,6 +18,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.lang.ref.WeakReference;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -30,6 +32,15 @@ import io.bloc.android.blocly.api.model.RssItem;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
 
     private static String TAG = ItemAdapter.class.getSimpleName();
+
+    public static interface ItemAdapterDelegate{
+        public void didExpandFeed(ItemAdapter itemAdapter, boolean contentExpanded);
+        public void didVisitSite(ItemAdapter itemAdapter);
+        public void didFavoriteItem(ItemAdapter itemAdapter);
+        public void didArchiveItem(ItemAdapter itemAdapter);
+    }
+
+    WeakReference<ItemAdapterDelegate> itemAdapterDelegate;
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -52,6 +63,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     @Override
     public int getItemCount(){
         return BloclyApplication.getSharedDataSource().getItems().size();
+    }
+
+    // Add getter and setter methods for itemAdapterWeakDelegate
+    public ItemAdapterDelegate getItemAdapterDelegate(){
+        if(itemAdapterDelegate == null){
+            return null;
+        }
+        return itemAdapterDelegate.get();
+    }
+
+    public void setItemAdapterDelegate(ItemAdapterDelegate itemAdapterDelegate){
+        this.itemAdapterDelegate = new WeakReference<ItemAdapterDelegate>(itemAdapterDelegate);
     }
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
@@ -171,7 +194,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         // Abstract and only method of View.OnClickListener
         public void onClick(View view) {
 
+            if(getItemAdapterDelegate() == null){
+                return;
+            }
             if(view == itemView){
+                getItemAdapterDelegate().didExpandFeed(ItemAdapter.this, animateContent(contentExpanded));
                 animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
