@@ -1,6 +1,7 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -9,8 +10,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
@@ -28,6 +33,9 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     private DrawerLayout drawerLayout;
     // Add an instance of NavigationDrawerAdapter
     private NavigationDrawerAdapter navigationDrawerAdapter;
+    // Add fields to track Menu object and Overflow button
+    private Menu menu;
+    private View overflowButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +72,77 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         drawerLayout = (DrawerLayout) findViewById(R.id.dl_activity_blocly);
 
         // ActionBarDrawerToggle(activity, drawerLayout, int openDrawerContentDescRes, int closeDrawerContentDescRes)
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, 0, 0);
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, 0, 0){
+            // Anonymous classes to override ActionBarDrawerToggle's default behaviors.
+            // When the drawer opens, enable both Menu item and Overflow button
+            @Override
+            public void onDrawerClosed(View drawerView){
+                super.onDrawerClosed(drawerView);
+                // If drawer is closed, set overflowButton to visible and enabled
+                if(overflowButton != null){
+                    overflowButton.setAlpha(1f);
+                    overflowButton.setEnabled(true);
+                }
+                if(menu == null){
+                    return;
+                }
+                for(int i = 0; i < menu.size(); i++){
+                    MenuItem item = menu.getItem(i);
+                    item.setEnabled(true);
+                    Drawable icon = item.getIcon();
+                    if(icon != null){
+                        icon.setAlpha(255);
+                    }
+                }
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView){
+                super.onDrawerOpened(drawerView);
+                if(overflowButton != null){
+                    // Even though we don't see the buttons, they would still be clickable if we
+                    // did not disable them
+                    overflowButton.setEnabled(false);
+                }
+                if(menu == null){
+                    return;
+                }
+                for(int i = 0; i < menu.size(); i ++){
+                    menu.getItem(i).setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onDrawerSlide(View drawView, float slideOffset){
+                // As the drawer moves, slideOffset ranges from 0f at the edge of the screen to
+                // 1f at the drawer's maximum width
+                super.onDrawerSlide(drawView, slideOffset);
+                if(overflowButton == null){
+                    // The List that contains the matching views
+                    ArrayList<View> foundViews = new ArrayList<View>();
+                    // Traverse the view-hierarchy and locate the overflow button
+                    getWindow().getDecorView().findViewsWithText(foundViews,
+                            getString(R.string.abc_action_menu_overflow_description),
+                            View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+                    if(foundViews.size() > 0){
+                        overflowButton = foundViews.get(0);
+                    }
+                    if(overflowButton != null){
+                        overflowButton.setAlpha(1f - slideOffset);
+                    }
+                    if(menu == null){
+                        return;
+                    }
+                    for(int i = 0; i < menu.size(); i++){
+                        MenuItem item = menu.getItem(i);
+                        Drawable icon = item.getIcon();
+                        if(icon != null){
+                            icon.setAlpha((int) (1f - slideOffset) * 255);
+                        }
+                    }
+                }
+            }
+        };
         drawerLayout.addDrawerListener(drawerToggle);
     }
 
@@ -92,7 +170,20 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         if(drawerToggle.onOptionsItemSelected(item)){
             return true;
         }
+        // A Toast is displayed each time an Overflow menu item is pressed
+        Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    // Menus belong to controllers, which is handled by BloclyActivity
+    // Method to inflate the menu items programmatically
+    public boolean onCreateOptionsMenu(Menu menu){
+        // .inflate(int menuRes, Menu menu)
+        getMenuInflater().inflate(R.menu.blocly, menu);
+        // Saves a reference to the menu object we just created
+        this.menu = menu;
+        return super.onCreateOptionsMenu(menu);
     }
 
     /*NavigationDrawerAdapter Delegate*/
