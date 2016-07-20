@@ -10,17 +10,21 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
+import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
+public class BloclyActivity extends AppCompatActivity implements
+        NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
+        ItemAdapter.ItemAdapterDelegate{
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
@@ -43,6 +47,8 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
 
         // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
         navigationDrawerAdapter.setDelegate(this);
+        // Set BloclyActivity (this) as ItemAdapter's delegate
+        itemAdapter.setItemAdapterDelegate(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
@@ -110,5 +116,41 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
         drawerLayout.closeDrawers();
         Toast.makeText(this, "Show RSS feed from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    /* ItemAdapter Delegate */
+
+    @Override
+    public void didExpandItem(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded) {
+        if(contentExpanded){
+            Toast.makeText(this, "Called after expanding RSS Item", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "Called after contracting RSS Item", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view) {
+        // makeText(Context context, CharSequence text, int duration).show();
+        Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void didSelectArchiveCheckbox(ItemAdapter itemAdapter, RssItem rssItem, boolean isArchived) {
+        if(isArchived){
+            Toast.makeText(this, "Item archived", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "Item unarchived", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void didSelectFavoriteCheckbox(ItemAdapter itemAdapter, RssItem rssItem, boolean isFavorite) {
+        if(isFavorite){
+            Toast.makeText(this, "Item favorited", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "Item un-favorited", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }

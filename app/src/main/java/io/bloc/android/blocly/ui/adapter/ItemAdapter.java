@@ -18,6 +18,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.lang.ref.WeakReference;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -30,6 +32,15 @@ import io.bloc.android.blocly.api.model.RssItem;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
 
     private static String TAG = ItemAdapter.class.getSimpleName();
+
+    public static interface ItemAdapterDelegate{
+        public void didExpandItem(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded);
+        public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view);
+        public void didSelectArchiveCheckbox(ItemAdapter itemAdapter, RssItem rssItem, boolean isArchived);
+        public void didSelectFavoriteCheckbox(ItemAdapter itemAdapter, RssItem rssItem, boolean isFavorite);
+    }
+
+    WeakReference<ItemAdapterDelegate> itemAdapterDelegate;
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -52,6 +63,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     @Override
     public int getItemCount(){
         return BloclyApplication.getSharedDataSource().getItems().size();
+    }
+
+    // Add getter and setter method for delegate
+    public ItemAdapterDelegate getItemAdapterDelegate(){
+        // If the original reference has been removed, this method will return null
+        if(itemAdapterDelegate == null){
+            return null;
+        }
+        // Use WeakReference.get() to recover the object within
+        return itemAdapterDelegate.get();
+    }
+
+    public void setItemAdapterDelegate(ItemAdapterDelegate itemAdapterDelegate){
+        this.itemAdapterDelegate = new WeakReference<ItemAdapterDelegate> (itemAdapterDelegate);
     }
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
@@ -175,14 +200,25 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
-                // makeText(Context context, CharSequence text, int duration).show();
-                Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+                if(getItemAdapterDelegate() != null){
+                    getItemAdapterDelegate().didSelectVisitSite(ItemAdapter.this, rssItem, view);
+                }
             }
         }
 
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
+            if(getItemAdapterDelegate() != null){
+                // If archive checkbox is selected or deselected, call .didSelectArchiveCheckbox()
+                if(buttonButton.equals(archiveCheckBox)){
+                    getItemAdapterDelegate().didSelectArchiveCheckbox(ItemAdapter.this, rssItem, isChecked);
+                }
+                // Else favorite checkbox is selected or deselected, call .didSelectFavoriteCheckbox()
+                else if(buttonButton.equals(favoriteCheckBox)){
+                    getItemAdapterDelegate().didSelectFavoriteCheckbox(ItemAdapter.this, rssItem, isChecked);
+                }
+            }
         }
 
         /*
@@ -220,8 +256,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 );
                 // getMeasuredHeight() provides the height (in pixels) that expandedContentWrapper wishes to be
                 finalHeight = expandedContentWrapper.getMeasuredHeight();
+
+                // Communicates if RssItem content has been expanded
+                if(getItemAdapterDelegate() != null){
+                    // didExpandItem(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded)
+                    getItemAdapterDelegate().didExpandItem(ItemAdapter.this, rssItem, expand);
+                }
             } else {
                 content.setVisibility(View.VISIBLE);
+
+                // Communicates if RssItem content has been contracted
+                if(getItemAdapterDelegate() != null){
+                    // didExpandItem(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded)
+                    getItemAdapterDelegate().didExpandItem(ItemAdapter.this, rssItem, expand);
+                }
             }
 
             //  AnimatorUpdateListener receives updates during an animation
