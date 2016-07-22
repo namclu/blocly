@@ -171,7 +171,17 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
             return true;
         }
         // A Toast is displayed each time an Overflow menu item is pressed
-        Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+        if(item.getTitle().equals("Share")){
+            Toast.makeText(this, R.string.menu_share_message, Toast.LENGTH_SHORT).show();
+        }else if(item.getTitle().equals("Search")){
+            Toast.makeText(this, R.string.menu_search_message, Toast.LENGTH_SHORT).show();
+        }else {
+            if (item.getTitle().equals("Refresh")) {
+                Toast.makeText(this, R.string.menu_refresh_message, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, R.string.menu_mark_as_read_message, Toast.LENGTH_SHORT).show();
+            }
+        }
         return super.onOptionsItemSelected(item);
     }
 

@@ -10,4 +10,8 @@
     <string name="menu_search">Search</string>
     <string name="menu_refresh">Refresh</string>
     <string name="menu_mark_as_read">Mark all as read</string>
+    <string name="menu_share_message">I love to share!</string>
+    <string name="menu_search_message">Searching is fun!</string>
+    <string name="menu_refresh_message">Refresh it up...</string>
+    <string name="menu_mark_as_read_message">Mark \'em all!</string>
 </resources>
