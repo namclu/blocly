@@ -17,15 +17,21 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
+import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
+public class BloclyActivity extends AppCompatActivity
+        implements
+        NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
+        ItemAdapter.DataSource,
+        ItemAdapter.Delegate{
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
@@ -47,6 +53,10 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         setSupportActionBar(toolbar);
 
         itemAdapter = new ItemAdapter();
+        // Set BloclyActivity as ItemAdapter's delegate and data source.
+        itemAdapter.setDataSource(this);
+        itemAdapter.setDelegate(this);
+
         navigationDrawerAdapter = new NavigationDrawerAdapter();
 
         // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
@@ -201,5 +211,70 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
         drawerLayout.closeDrawers();
         Toast.makeText(this, "Show RSS feed from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    /*
+    * ItemAdapter.DataSource
+    * */
+
+    @Override
+    public RssItem getRssItem(ItemAdapter itemAdapter, int position) {
+        // getSharedDataSource() returns a DataSource
+        // getItems() returns a List<RssItem>
+        // get() returns a RssItem
+        return BloclyApplication.getSharedDataSource().getItems().get(position);
+    }
+
+    @Override
+    public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
+        // getFeeds() returns a List<RssFeed>
+        // get() returns a RssFeed
+        return BloclyApplication.getSharedDataSource().getFeeds().get(0);
+    }
+
+    @Override
+    public int getItemCount(ItemAdapter itemAdapter) {
+        return BloclyApplication.getSharedDataSource().getItems().size();
+    }
+
+    /*
+    * ItemAdapter.Delegate
+    * */
+
+    @Override
+    public void onItemClicked(ItemAdapter itemAdapter, RssItem rssItem) {
+        int positionToExpand = -1;
+        int positionToContract = -1;
+
+        // Checks if ItemAdapter has an expanded item
+        // getExpandedItem() returns an RssItem
+        if(itemAdapter.getExpandedItem() != null){
+            // If ItemAdapter was previously expanded, contract it
+            // Recover its position within the list by invoking List's indexOf(Object) method
+            // getSharedDataSource() returns a DataSource
+            // getItems() returns a List<RssItem>
+            // indexOf() returns an int
+            positionToContract = BloclyApplication.getSharedDataSource().getItems().indexOf(itemAdapter.getExpandedItem());
+        }
+
+        // When a new item is clicked, recover its position within the list and set it as the expanded item
+        if(itemAdapter.getExpandedItem() != rssItem){
+            positionToExpand = BloclyApplication.getSharedDataSource().getItems().indexOf(rssItem);
+            itemAdapter.setExpandedItem(rssItem);
+        }else{
+            // If user clicks on the expanded item, contract it by resetting ItemAdapter's expanded item to null
+            itemAdapter.setExpandedItem(null);
+        }
+
+        // Once the position of either item is known, notify the ItemAdapter of a change
+        // notifyItemChanged(int position) will notify ItemAdapter that item at position has changed
+        // ItemAdapterViewHolder's update(RssFeed, RssItem) will execute which invokes the line we added previously
+        if(positionToContract > -1){
+            itemAdapter.notifyItemChanged(positionToContract);
+        }
+
+        if(positionToExpand > -1){
+            itemAdapter.notifyItemChanged(positionToExpand);
+        }
     }
 }

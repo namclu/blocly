@@ -18,6 +18,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.lang.ref.WeakReference;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -29,7 +31,26 @@ import io.bloc.android.blocly.api.model.RssItem;
  */
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
 
+    // DataSource interface will supply the ItemAdapter with information
+    // Supports de-coupling of ItemAdapter from DataSource
+    public static interface DataSource{
+        public RssItem getRssItem(ItemAdapter itemAdapter, int position);
+        public RssFeed getRssFeed(ItemAdapter itemAdapter, int position);
+        public int getItemCount(ItemAdapter itemAdapter);
+    }
+
+    public static interface Delegate{
+        public void onItemClicked(ItemAdapter itemAdapter, RssItem rssItem);
+    }
+
     private static String TAG = ItemAdapter.class.getSimpleName();
+
+    // An expandedItem field to represent the RssItem
+    private RssItem expandedItem = null;
+
+    // References to delegate objects
+    private WeakReference<DataSource> dataSource;
+    private WeakReference<Delegate> delegate;
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -45,13 +66,61 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     // onBindViewHolder(VH holder, int position), requested when an index needs its data mapped
     // to a given ViewHolder
     public void onBindViewHolder(ItemAdapterViewHolder itemAdapterViewHolder, int index){
-        DataSource shareDataSource = BloclyApplication.getSharedDataSource();
-        itemAdapterViewHolder.update(shareDataSource.getFeeds().get(0), shareDataSource.getItems().get(index));
+        if(getDataSource() == null){
+            return;
+        }
+        // Calling DataSource interfaces
+        // getRssItem(ItemAdapter itemAdapter, int position)
+        RssItem rssItem = getDataSource().getRssItem(this, index);
+        // getRssFeed(ItemAdapter itemAdapter, int position)
+        RssFeed rssFeed = getDataSource().getRssFeed(this, index);
+        itemAdapterViewHolder.update(rssFeed, rssItem);
     }
 
     @Override
     public int getItemCount(){
-        return BloclyApplication.getSharedDataSource().getItems().size();
+        if(getDataSource() == null){
+            return 0;
+        }
+        return getDataSource().getItemCount(this);
+    }
+
+    /*
+    * Getters and setters for DataSource and Delegate
+    * */
+
+    public DataSource getDataSource() {
+        if(dataSource == null){
+            return null;
+        }
+        return dataSource.get();
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = new WeakReference<DataSource>(dataSource);
+    }
+
+    public Delegate getDelegate() {
+        if(delegate == null){
+            return null;
+        }
+        return delegate.get();
+    }
+
+    public void setDelegate(Delegate delegate) {
+        this.delegate = new WeakReference<Delegate>(delegate);
+    }
+
+    /*
+    * Getter and setter for expandedItem
+    * */
+
+    public RssItem getExpandedItem() {
+        return expandedItem;
+    }
+
+    public void setExpandedItem(RssItem expandedItem) {
+        this.expandedItem = expandedItem;
     }
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
@@ -98,7 +167,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
             // A single itemView maps to a single ViewHolder, and this pair of objects is reused
             // and recycled to accommodate larger sets of data
-            // setOnClickListener(onClickListener l);
+            // .setOnClickListener(onClickListener l);
             itemView.setOnClickListener(this);
 
             // Set visitSite's onClickListener
@@ -128,6 +197,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             } else{
                 headerWrapper.setVisibility(View.GONE);
             }
+            // Guarantees that the View associated with the expanded RSS item is the
+            // only View which expands
+            // If ItemAdapterViewHolder's RssItem == ItemAdapter's expanded RssItem, it will
+            // expand its View, otherwise it will contract
+            animateContent(getExpandedItem() == rssItem);
         }
 
          /*
@@ -172,7 +246,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                animateContent(!contentExpanded);
+                if(getDelegate() != null){
+                    // Calling Delegate interface to react to click events
+                    // onItemClicked(ItemAdapter itemAdapter, RssItem rssItem)
+                    getDelegate().onItemClicked(ItemAdapter.this, rssItem);
+                }
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
