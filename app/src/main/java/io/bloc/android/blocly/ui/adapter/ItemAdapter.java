@@ -20,9 +20,7 @@ import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import java.lang.ref.WeakReference;
 
-import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
-import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
 

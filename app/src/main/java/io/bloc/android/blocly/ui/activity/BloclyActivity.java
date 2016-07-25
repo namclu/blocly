@@ -39,6 +39,8 @@ public class BloclyActivity extends AppCompatActivity
     private DrawerLayout drawerLayout;
     // Add an instance of NavigationDrawerAdapter
     private NavigationDrawerAdapter navigationDrawerAdapter;
+    // Add an instance of RecyclerView
+    private RecyclerView recyclerView;
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
@@ -63,7 +65,7 @@ public class BloclyActivity extends AppCompatActivity
         navigationDrawerAdapter.setDelegate(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
+        recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
         RecyclerView navigationRecyclerView = (RecyclerView) findViewById(R.id.rv_nav_activity_blocly);
 
         // Set the layout, animator, and adapter for recyclerView
@@ -275,6 +277,7 @@ public class BloclyActivity extends AppCompatActivity
 
         if(positionToExpand > -1){
             itemAdapter.notifyItemChanged(positionToExpand);
+            recyclerView.smoothScrollToPosition(positionToExpand);
         }
     }
 }
