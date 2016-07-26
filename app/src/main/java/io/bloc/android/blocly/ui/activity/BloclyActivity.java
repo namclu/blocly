@@ -33,6 +33,8 @@ public class BloclyActivity extends AppCompatActivity
         ItemAdapter.DataSource,
         ItemAdapter.Delegate{
 
+    // Add external reference to RecyclerView
+    private RecyclerView recyclerView;
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
     private ActionBarDrawerToggle drawerToggle;
@@ -63,7 +65,7 @@ public class BloclyActivity extends AppCompatActivity
         navigationDrawerAdapter.setDelegate(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
+        recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
         RecyclerView navigationRecyclerView = (RecyclerView) findViewById(R.id.rv_nav_activity_blocly);
 
         // Set the layout, animator, and adapter for recyclerView
@@ -255,6 +257,13 @@ public class BloclyActivity extends AppCompatActivity
             // getItems() returns a List<RssItem>
             // indexOf() returns an int
             positionToContract = BloclyApplication.getSharedDataSource().getItems().indexOf(itemAdapter.getExpandedItem());
+
+            // Only check the edge-case condition when both expanding and contracting Views are visible on screen
+            // findViewByPosition() returns 'position' if View is currently onscreen, 'null' otherwise
+            View viewToContract = recyclerView.getLayoutManager().findViewByPosition(positionToContract);
+            if(viewToContract == null){
+                positionToContract = -1;
+            }
         }
 
         // When a new item is clicked, recover its position within the list and set it as the expanded item
@@ -275,6 +284,24 @@ public class BloclyActivity extends AppCompatActivity
 
         if(positionToExpand > -1){
             itemAdapter.notifyItemChanged(positionToExpand);
+        } else{
+            // The list should only scroll if and when the user expands a new item.
+            return;
         }
+        // Variable to determine how much less we need to scroll when expanding
+        int lessToScroll = 0;
+
+        // To get the lessToScroll value, verify that:
+        // contracting View is visible &&
+        // contracting View resides above newly expanding View
+        if(positionToContract > -1 && positionToContract < positionToExpand){
+            lessToScroll = itemAdapter.getExpandedItemHeight() - itemAdapter.getCollapsedItemHeight();
+        }
+
+        // findViewByPosition() returns 'position' if view is currently onscreen, 'null' otherwise
+        View viewToExpand = recyclerView.getLayoutManager().findViewByPosition(positionToExpand);
+        // smoothScrollBy(int dx, int dy)
+        // getTop() returns distance between top of View and top of its parent, in pixels
+        recyclerView.smoothScrollBy(0, viewToExpand.getTop() - lessToScroll);
     }
 }

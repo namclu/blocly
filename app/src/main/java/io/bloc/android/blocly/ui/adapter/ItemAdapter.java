@@ -52,6 +52,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     private WeakReference<DataSource> dataSource;
     private WeakReference<Delegate> delegate;
 
+    // Track view's expanding and contracting heights
+    private int collapsedItemHeight;
+    private int expandedItemHeight;
+
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
     // matching the class we supplied as our typed-parameter, ItemAdapterViewHolder
@@ -121,6 +125,26 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
     public void setExpandedItem(RssItem expandedItem) {
         this.expandedItem = expandedItem;
+    }
+
+    /*
+    * Getters and setter for collapsedItemHeight and expandedItemHeight
+    * */
+
+    public int getCollapsedItemHeight() {
+        return collapsedItemHeight;
+    }
+
+    private void setCollapsedItemHeight(int collapsedItemHeight) {
+        this.collapsedItemHeight = collapsedItemHeight;
+    }
+
+    public int getExpandedItemHeight() {
+        return expandedItemHeight;
+    }
+
+    private void setExpandedItemHeight(int expandedItemHeight) {
+        this.expandedItemHeight = expandedItemHeight;
     }
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
@@ -280,6 +304,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             int finalHeight = content.getMeasuredHeight();
 
             if(expand){
+                // 	Call setCollapsedItemHeight() the moment view prepares to expand.
+                setCollapsedItemHeight(itemView.getHeight());
+
                 // When expanding, set the starting height to that of the preview content
                 // Make full-length content visible but transparent and then animate from
                 // full transparency to full opacity.
@@ -328,6 +355,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                     if(animatedFraction == 1f){
                         if(expand){
                             content.setVisibility(View.GONE);
+                            // Call setExpandedItemHeight() once animation completes
+                            setExpandedItemHeight(itemView.getHeight());
                         } else{
                             expandedContentWrapper.setVisibility(View.GONE);
                         }
