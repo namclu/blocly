@@ -268,6 +268,9 @@ public class BloclyActivity extends AppCompatActivity
         positionToExpand = -1;
         int positionToContract = -1;
 
+        // Reference to the Share button
+        shareButton = findViewById(R.id.action_share);
+
         // Checks if ItemAdapter has an expanded item
         // getExpandedItem() returns an RssItem
         if(itemAdapter.getExpandedItem() != null){
@@ -302,13 +305,14 @@ public class BloclyActivity extends AppCompatActivity
             itemAdapter.notifyItemChanged(positionToContract);
 
             // If View contracts, hide and disable the Share button
-            
+            shareButton.setVisibility(View.INVISIBLE);
         }
 
         if(positionToExpand > -1){
             itemAdapter.notifyItemChanged(positionToExpand);
 
             // If View expands, reveal and enable the Share button
+            shareButton.setVisibility(View.VISIBLE);
 
         } else{
             // The list should only scroll if and when the user expands a new item.
