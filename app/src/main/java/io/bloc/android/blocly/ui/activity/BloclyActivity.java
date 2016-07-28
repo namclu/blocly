@@ -1,5 +1,6 @@
 package io.bloc.android.blocly.ui.activity;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -44,6 +45,12 @@ public class BloclyActivity extends AppCompatActivity
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
+
+    // A reference to track Share button object
+    private View shareButton;
+
+    // Use positionToExpand to determine which RsssItem has been expanded
+    private int positionToExpand = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,8 +189,20 @@ public class BloclyActivity extends AppCompatActivity
         if(drawerToggle.onOptionsItemSelected(item)){
             return true;
         }
-        // A Toast is displayed each time an Overflow menu item is pressed
-        Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+
+        // If Share button is pressed and RssItem is expanded, share RssItem with another application
+        if(item.getItemId() == R.id.action_share && positionToExpand > -1){
+
+            // Intent action to share RssItem
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Rss Title: " + itemAdapter.getExpandedItem().getTitle());
+            shareIntent.setType("text/plain");
+            startActivity(shareIntent);
+        }else{
+
+            // A Toast is displayed each time an Overflow menu item is pressed. Excludes Share button
+            Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -245,7 +264,8 @@ public class BloclyActivity extends AppCompatActivity
 
     @Override
     public void onItemClicked(ItemAdapter itemAdapter, RssItem rssItem) {
-        int positionToExpand = -1;
+
+        positionToExpand = -1;
         int positionToContract = -1;
 
         // Checks if ItemAdapter has an expanded item
@@ -280,10 +300,16 @@ public class BloclyActivity extends AppCompatActivity
         // ItemAdapterViewHolder's update(RssFeed, RssItem) will execute which invokes the line we added previously
         if(positionToContract > -1){
             itemAdapter.notifyItemChanged(positionToContract);
+
+            // If View contracts, hide and disable the Share button
+            
         }
 
         if(positionToExpand > -1){
             itemAdapter.notifyItemChanged(positionToExpand);
+
+            // If View expands, reveal and enable the Share button
+
         } else{
             // The list should only scroll if and when the user expands a new item.
             return;
