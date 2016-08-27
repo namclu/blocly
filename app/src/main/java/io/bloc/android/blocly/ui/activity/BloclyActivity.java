@@ -1,7 +1,10 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.animation.ValueAnimator;
+import android.app.SearchManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -13,6 +16,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +24,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
@@ -175,6 +180,38 @@ public class BloclyActivity extends AppCompatActivity
             }
         };
         drawerLayout.addDrawerListener(drawerToggle);
+
+        // Log all activities which can dial a telephone number
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("421 555 555"));
+        callIntent.setType("text/plain");
+        List<ResolveInfo> callNumberList = getApplicationContext().getPackageManager()
+                .queryIntentActivities(callIntent, PackageManager.GET_RESOLVED_FILTER);
+        for (ResolveInfo apps : callNumberList) {
+            String appName = apps.activityInfo.applicationInfo.loadLabel(getPackageManager()).toString();
+            Log.i("BloclyActivity", "Dial number: " + appName);
+        }
+
+        // Log all activities which can open a web page
+        Intent webIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+        webIntent.putExtra(SearchManager.QUERY, "http://www.google.com/");
+        webIntent.setType("text/plain");
+        List<ResolveInfo> webSearchList = getApplicationContext().getPackageManager()
+                .queryIntentActivities(webIntent, PackageManager.GET_RESOLVED_FILTER);
+        for (ResolveInfo apps : webSearchList) {
+            String appName = apps.activityInfo.applicationInfo.loadLabel(getPackageManager()).toString();
+            Log.i("BloclyActivity", "Web search: " + appName);
+        }
+
+        // Log all activities which can compose an email
+        Intent openWebPageIntent = new Intent(Intent.ACTION_SEND);
+        openWebPageIntent.setType("text/plain");
+        List<ResolveInfo> openWebPageList = getApplicationContext().getPackageManager()
+                .queryIntentActivities(openWebPageIntent, PackageManager.GET_RESOLVED_FILTER);
+        for (ResolveInfo apps : openWebPageList) {
+            String appName = apps.activityInfo.applicationInfo.loadLabel(getPackageManager()).toString();
+            Log.i("BloclyActivity", "Compose email: " + appName);
+        }
     }
 
     @Override
