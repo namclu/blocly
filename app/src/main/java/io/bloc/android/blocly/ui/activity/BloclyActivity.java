@@ -204,11 +204,11 @@ public class BloclyActivity extends AppCompatActivity
         }
 
         // Log all activities which can compose an email
-        Intent openWebPageIntent = new Intent(Intent.ACTION_SEND);
-        openWebPageIntent.setType("text/plain");
-        List<ResolveInfo> openWebPageList = getApplicationContext().getPackageManager()
-                .queryIntentActivities(openWebPageIntent, PackageManager.GET_RESOLVED_FILTER);
-        for (ResolveInfo apps : openWebPageList) {
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("text/plain");
+        List<ResolveInfo> sendEmailList = getApplicationContext().getPackageManager()
+                .queryIntentActivities(emailIntent, PackageManager.GET_RESOLVED_FILTER);
+        for (ResolveInfo apps : sendEmailList) {
             String appName = apps.activityInfo.applicationInfo.loadLabel(getPackageManager()).toString();
             Log.i("BloclyActivity", "Compose email: " + appName);
         }
