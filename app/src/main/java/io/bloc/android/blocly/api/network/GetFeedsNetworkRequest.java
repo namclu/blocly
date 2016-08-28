@@ -12,6 +12,10 @@ import java.io.InputStreamReader;
  */
 public class GetFeedsNetworkRequest extends NetworkRequest {
 
+    // Track the number of items found in RSS feed
+    private int rssFeedCount = 0;
+    private String rssTitleTag = "<title>";
+
     // Recover multiple RSS feeds and store each feed's address
     String [] feedUrls;
 
@@ -41,7 +45,15 @@ public class GetFeedsNetworkRequest extends NetworkRequest {
                     Log.v(getClass().getSimpleName(), "Line: " + line);
                     // readLine() method reads a line of text and returns it as a String
                     line = bufferedReader.readLine();
+
+                    // Count the number of items found in RSS feed
+                    if (line != null && line.contains("<title>")) {
+                        rssFeedCount++;
+                    }
                 }
+                // Print the number of items found in RSS feed
+                Log.v(getClass().getSimpleName(), "RSS feed count: " + rssFeedCount);
+
                 // Close the reader and its stream
                 bufferedReader.close();
             } catch (IOException e) {
