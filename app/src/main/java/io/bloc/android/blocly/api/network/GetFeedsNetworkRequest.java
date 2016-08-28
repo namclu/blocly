@@ -14,7 +14,6 @@ public class GetFeedsNetworkRequest extends NetworkRequest {
 
     // Track the number of items found in RSS feed
     private int rssFeedCount = 0;
-    private String rssTitleTag = "<title>";
 
     // Recover multiple RSS feeds and store each feed's address
     String [] feedUrls;
@@ -49,6 +48,14 @@ public class GetFeedsNetworkRequest extends NetworkRequest {
                     // Count the number of items found in RSS feed
                     if (line != null && line.contains("<title>")) {
                         rssFeedCount++;
+
+                        // Capture the RSS feed title and print out
+                        String rssFeedTitle = line.replace("<title>", "").replace("</title>", "").trim();
+                        Log.v(getClass().getSimpleName(), rssFeedCount + " Title: " + rssFeedTitle);
+                    } else if ((line != null && line.contains("<link>"))) {
+                        // Capture the RSS feed URL and print out
+                        String rssFeedUrl = line.replace("<link>", "").replace("</link>", "").trim();
+                        Log.v(getClass().getSimpleName(), rssFeedCount + " URL: " + rssFeedUrl);
                     }
                 }
                 // Print the number of items found in RSS feed
