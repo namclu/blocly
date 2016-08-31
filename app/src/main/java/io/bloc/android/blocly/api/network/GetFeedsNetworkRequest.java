@@ -63,7 +63,8 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                 // each tag and attribute into a Node
                 Document xmlDocument = documentBuilder.parse(inputStream);
 
-                // Method to recover the title, link and description of the feed
+                // Recover the title, link and description of the feed
+                // .optFirstTagFromDocument(Document document, String tagName)
                 String channelTitle = optFirstTagFromDocument(xmlDocument, XML_TAG_TITLE);
                 String channelDescription = optFirstTagFromDocument(xmlDocument, XML_TAG_DESCRIPTION);
                 String channelURL = optFirstTagFromDocument(xmlDocument, XML_TAG_LINK);
@@ -117,9 +118,11 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                     responseItems.add(new ItemResponse(itemURL, itemTitle, itemDescription,
                             itemGUID, itemPubDate, itemEnclosureURL, itemEnclosureMIMEType));
                 }
+                // Add parsed items to responseFeeds and close InputStream
                 responseFeeds.add(new FeedResponse(feedUrlString, channelTitle, channelURL,
                         channelDescription, responseItems));
                 inputStream.close();
+                // documentBuilder.parse throws IOException, SAXException
             } catch (IOException e) {
                 e.printStackTrace();
                 setErrorCode(ERROR_IO);
@@ -128,6 +131,7 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                 e.printStackTrace();
                 setErrorCode(ERROR_PARSING);
                 return null;
+                // DocumentBuilderFactory throws ParserConfigurationException
             } catch (ParserConfigurationException e) {
                 e.printStackTrace();
                 setErrorCode(ERROR_PARSING);
@@ -144,13 +148,14 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
         // .getElementsByTagName(String tagName)
         NodeList elementsByTagName = document.getElementsByTagName(tagName);
         if (elementsByTagName.getLength() > 0) {
-            // .getTextContent() returns a String
+            // .getTextContent() returns the text content of the node
             return elementsByTagName.item(0).getTextContent();
         }
         return null;
     }
 
-    //
+    // Returns the objects contained underneath the <channel>...<channel> tags of an XML doc
+    // and a List<ItemResponse>
     public static class FeedResponse {
         public final String channelFeedURL;
         public final String channelTitle;
@@ -168,7 +173,8 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
         }
     }
 
-    //
+    // Returns the objects contained underneath the <item>...</item> tags of an XML doc and used
+    // by FeedResponse
     public static class ItemResponse {
         public final String itemURL;
         public final String itemTitle;
