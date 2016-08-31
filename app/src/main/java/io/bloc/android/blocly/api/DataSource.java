@@ -28,6 +28,7 @@ public class DataSource {
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
         // network request, therefore we place it in a background thread
+        // List<FeedResponse> performRequest()
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -37,12 +38,19 @@ public class DataSource {
         }).start();
     }
 
+    // public RssFeed(String title, String description, String siteUrl, String feedUrl)
     public List<RssFeed> getFeeds(){
         return feeds;
     }
 
+    // public RssItem(String guid, String title, String description, String url, String imageUrl,
+    // long rssFeedId, long datePublished, boolean favorite, boolean archived)
     public List<RssItem> getItems(){
         return items;
+    }
+
+    void createRealData() {
+
     }
 
     void createFakeData() {
