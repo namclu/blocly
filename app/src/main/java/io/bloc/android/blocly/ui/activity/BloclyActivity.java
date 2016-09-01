@@ -1,7 +1,6 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.animation.ValueAnimator;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -183,8 +182,7 @@ public class BloclyActivity extends AppCompatActivity
 
         // Log all activities which can dial a telephone number
         Intent callIntent = new Intent(Intent.ACTION_DIAL);
-        callIntent.setData(Uri.parse("421 555 555"));
-        callIntent.setType("text/plain");
+        callIntent.setData(Uri.parse("tel:421555555"));
         List<ResolveInfo> callNumberList = getApplicationContext().getPackageManager()
                 .queryIntentActivities(callIntent, PackageManager.GET_RESOLVED_FILTER);
         for (ResolveInfo apps : callNumberList) {
@@ -193,9 +191,7 @@ public class BloclyActivity extends AppCompatActivity
         }
 
         // Log all activities which can open a web page
-        Intent webIntent = new Intent(Intent.ACTION_WEB_SEARCH);
-        webIntent.putExtra(SearchManager.QUERY, "http://www.google.com/");
-        webIntent.setType("text/plain");
+        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com/"));
         List<ResolveInfo> webSearchList = getApplicationContext().getPackageManager()
                 .queryIntentActivities(webIntent, PackageManager.GET_RESOLVED_FILTER);
         for (ResolveInfo apps : webSearchList) {
@@ -205,7 +201,10 @@ public class BloclyActivity extends AppCompatActivity
 
         // Log all activities which can compose an email
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
-        emailIntent.setType("text/plain");
+        // Using Intent.ACTION_SENDTO results in no email app being shown
+        // Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+        emailIntent.setData(Uri.parse("mailto:example@gmail.com"));
+        emailIntent.setType("message/rfc822");
         List<ResolveInfo> sendEmailList = getApplicationContext().getPackageManager()
                 .queryIntentActivities(emailIntent, PackageManager.GET_RESOLVED_FILTER);
         for (ResolveInfo apps : sendEmailList) {
