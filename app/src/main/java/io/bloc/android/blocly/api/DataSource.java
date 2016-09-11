@@ -1,5 +1,7 @@
 package io.bloc.android.blocly.api;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class DataSource {
     public DataSource(){
         feeds = new ArrayList<RssFeed>();
         items = new ArrayList<RssItem>();
-        createFakeData();
+        //createFakeData();
 
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
@@ -32,8 +34,44 @@ public class DataSource {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
+                List<GetFeedsNetworkRequest.FeedResponse> feedResponses;
+
+                // SimpleDateFormat is a class for formatting and parsing dates in a
+                // locale-sensitive manner. It allows for formatting (date -> text), parsing (text -> date)
+                // <pubDate>Tue, 18 Nov 2014 09:00:00 GMT</pubDate>
+                SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+
+                // A single FeedResponse returns FeedResponse(String channelFeedURL, String channelTitle,
+                //      String channelURL, String channelDescription, List<ItemResponse> channelItems)
+                feedResponses = new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
                         .performRequest();
+
+                // Loop through feedResponses to get the RssFeed objects
+                // RssFeed(String title, String description, String siteUrl, String feedUrl)
+                for (GetFeedsNetworkRequest.FeedResponse feedResponse : feedResponses) {
+                    feeds.add(new RssFeed(feedResponse.channelTitle,
+                            feedResponse.channelDescription,
+                            feedResponse.channelURL,
+                            feedResponse.channelFeedURL));
+                    // Loop through itemResponse and get the RssItem objects
+                    // RssItem(String guid, String title, String description, String url, String imageUrl,
+                    //      long rssFeedId, long datePublished, boolean favorite, boolean archived)
+                    for (GetFeedsNetworkRequest.ItemResponse itemResponse : feedResponse.channelItems) {
+                        try {
+                            items.add(new RssItem(itemResponse.itemURL,
+                                    itemResponse.itemTitle,
+                                    itemResponse.itemDescription,
+                                    itemResponse.itemGUID,
+                                    itemResponse.itemEnclosureURL,
+                                    0,
+                                    dateFormat.parse(itemResponse.itemPubDate).getTime(),
+                                    false,
+                                    false));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
         }).start();
     }

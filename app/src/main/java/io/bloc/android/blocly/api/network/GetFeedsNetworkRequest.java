@@ -87,7 +87,7 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                     // Recover the Node representing the individual RSS item before
                     // extracting a list of its child Nodes
                     Node itemNode = allItemsNodes.item(itemIndex);
-                    // .getChildNodes() returns a NodeList item
+                    // .getChildNodes() - each child Node represents a single tag found in-between <item>...</item>
                     NodeList tagNodes = itemNode.getChildNodes();
 
                     for (int tagIndex = 0; tagIndex < tagNodes.getLength(); tagIndex++) {
@@ -145,6 +145,7 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
     // If one or more tags are found by that name, the first tag's content is returned
     private String optFirstTagFromDocument(Document document, String tagName){
         // NodeList provides the abstraction of an ordered collection of nodes
+        // .getElementByTagName returns a NodeList of Elements in document order with given tag name
         // .getElementsByTagName(String tagName)
         NodeList elementsByTagName = document.getElementsByTagName(tagName);
         if (elementsByTagName.getLength() > 0) {
