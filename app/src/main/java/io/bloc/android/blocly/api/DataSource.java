@@ -1,5 +1,6 @@
 package io.bloc.android.blocly.api;
 
+import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
@@ -39,12 +40,13 @@ public class DataSource {
 
         // Both Table fields are kept w/in DataSource and act as primary access points for models
         // .getSharedInstance() returns an instance of BloclyApplication
+        // DatabaseOpenHelper(Context context, Table... tables)
         databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
                 rssFeedTable, rssItemTable);
 
         feeds = new ArrayList<RssFeed>();
         items = new ArrayList<RssItem>();
-        createFakeData();
+        // createFakeData();
 
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
@@ -52,6 +54,7 @@ public class DataSource {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                List<GetFeedsNetworkRequest.FeedResponse> feedResponses;
 
                 // DEBUG property is used to decide whether or not to delete the existing database
                 // The 'false' inside of if() ensures database is not lost each time app is launched
@@ -63,8 +66,61 @@ public class DataSource {
                 // getReadableDatabase() may also be used, however this method will not upgrade
                 // the database even if the versions are mismatched
                 SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
-                new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
+
+                feedResponses = new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
                         .performRequest();
+
+                // Store the FeedResponse objects into appropriate SQLite db field
+                for (GetFeedsNetworkRequest.FeedResponse feedResponse: feedResponses) {
+
+                    // ContentValues - used to store a set of values that the ContentResolver can process
+                    ContentValues feedValues = new ContentValues();
+
+                    // .put(String key, String value)
+                    feedValues.put(RssFeedTable.getColumnLink(), feedResponse.channelURL);
+                    feedValues.put(RssFeedTable.getColumnTitle(), feedResponse.channelTitle);
+                    feedValues.put(RssFeedTable.getColumnDescription(), feedResponse.channelDescription);
+                    feedValues.put(RssFeedTable.getColumnFeedUrl(), feedResponse.channelFeedURL);
+
+                    long feedId;
+
+                    // If feed URL already exists, then .update() database, else .insert() database
+                    // .query() returns a Cursor object, which represents the result of a query,
+                    //      which points to one row of the query result.
+                    // .getString(int columnIndex) returns a String
+                    if (writableDatabase.query("blocly_db",
+                            new String[]{RssFeedTable.getColumnFeedUrl()},
+                            null, null, null, null, null).getString().equals(feedResponse.channelURL)) {
+                        // int update(String table, ContentValues values, String whereClause, String[] whereArgs)
+                        feedId = (long) writableDatabase.update("blocly_db", feedValues, );
+                    } else {
+                        // long insert(String table, String nullColumnHack, ContentValues values)
+                        feedId = writableDatabase.insert(rssFeedTable.getName(), null, feedValues);
+                    }
+
+                    // Store the ItemResponse objects into appropriate SQLite db field
+                    for (GetFeedsNetworkRequest.ItemResponse itemResponse : feedResponse.channelItems) {
+
+                        ContentValues itemValues = new ContentValues();
+
+                        itemValues.put(RssItemTable.getColumnLink(), itemResponse.itemURL);
+                        itemValues.put(RssItemTable.getColumnTitle(), itemResponse.itemTitle);
+                        itemValues.put(RssItemTable.getColumnDescription(), itemResponse.itemDescription);
+                        // Identifies a unique ID for item table values
+                        itemValues.put(RssItemTable.getColumnGuid(), itemResponse.itemGUID);
+                        itemValues.put(RssItemTable.getColumnPubDate(), itemResponse.itemPubDate);
+                        itemValues.put(RssItemTable.getColumnEnclosure(), itemResponse.itemEnclosureURL);
+                        itemValues.put(RssItemTable.getColumnMimeType(), itemResponse.itemEnclosureMIMEType);
+                        itemValues.put(RssItemTable.getColumnRssFeed(), feedId);
+                        itemValues.put(RssItemTable.getColumnFavorite(), 0);
+                        itemValues.put(RssItemTable.getColumnArchived(), 0);
+
+                        // long insert(String table, String nullColumnHack, ContentValues values)
+                        writableDatabase.insert(rssItemTable.getName(), null, itemValues);
+                    }
+                }
+                // Close database
+                writableDatabase.close();
             }
         }).start();
     }

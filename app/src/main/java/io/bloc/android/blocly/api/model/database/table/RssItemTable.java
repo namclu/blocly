@@ -39,4 +39,44 @@ public class RssItemTable extends Table {
                 + COLUMN_FAVORITE + " INTEGER DEFAULT 0,"
                 + COLUMN_ARCHIVED + " INTEGER DEFAULT 0)";
     }
+
+    public static String getColumnLink() {
+        return COLUMN_LINK;
+    }
+
+    public static String getColumnTitle() {
+        return COLUMN_TITLE;
+    }
+
+    public static String getColumnDescription() {
+        return COLUMN_DESCRIPTION;
+    }
+
+    public static String getColumnGuid() {
+        return COLUMN_GUID;
+    }
+
+    public static String getColumnPubDate() {
+        return COLUMN_PUB_DATE;
+    }
+
+    public static String getColumnEnclosure() {
+        return COLUMN_ENCLOSURE;
+    }
+
+    public static String getColumnMimeType() {
+        return COLUMN_MIME_TYPE;
+    }
+
+    public static String getColumnRssFeed() {
+        return COLUMN_RSS_FEED;
+    }
+
+    public static String getColumnFavorite() {
+        return COLUMN_FAVORITE;
+    }
+
+    public static String getColumnArchived() {
+        return COLUMN_ARCHIVED;
+    }
 }

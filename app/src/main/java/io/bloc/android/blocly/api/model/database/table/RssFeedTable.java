@@ -26,4 +26,20 @@ public class RssFeedTable extends Table {
                 + COLUMN_DESCRIPTION + " TEXT,"
                 + COLUMN_FEED_URL + " TEXT)";
     }
+
+    public static String getColumnLink() {
+        return COLUMN_LINK;
+    }
+
+    public static String getColumnTitle() {
+        return COLUMN_TITLE;
+    }
+
+    public static String getColumnDescription() {
+        return COLUMN_DESCRIPTION;
+    }
+
+    public static String getColumnFeedUrl() {
+        return COLUMN_FEED_URL;
+    }
 }

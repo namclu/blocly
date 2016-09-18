@@ -24,6 +24,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         // Pass both the version and name of the database to the super constructor
         // SQLiteOpenHelper will compare the VERSION variable to the version stored
         // in the database; if they differ, an upgrade occurs
+        // SQLiteOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
         super(context, NAME, null, VERSION);
         this.tables = tables;
     }
@@ -33,7 +34,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         for (Table table : tables) {
-            // execSQL() ...
+            // .execSQL(String sql) executes a single SQL statement that is NOT a SELECT
+            // or any other SQL statement that returns data
             db.execSQL(table.getCreateStatement());
         }
     }
