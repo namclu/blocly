@@ -1,6 +1,7 @@
 package io.bloc.android.blocly.api;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
@@ -62,9 +63,10 @@ public class DataSource {
                 if (BuildConfig.DEBUG && false) {
                     BloclyApplication.getSharedInstance().deleteDatabase("blocly_db");
                 }
+
                 // Until getWritableDatabase() is invoked, our database will not be created nor opened
                 // getReadableDatabase() may also be used, however this method will not upgrade
-                // the database even if the versions are mismatched
+                //      the database even if the versions are mismatched
                 SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
 
                 feedResponses = new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
@@ -80,22 +82,35 @@ public class DataSource {
                     feedValues.put(RssFeedTable.getColumnLink(), feedResponse.channelURL);
                     feedValues.put(RssFeedTable.getColumnTitle(), feedResponse.channelTitle);
                     feedValues.put(RssFeedTable.getColumnDescription(), feedResponse.channelDescription);
+                    // Identifies a unique RssFeed table value
                     feedValues.put(RssFeedTable.getColumnFeedUrl(), feedResponse.channelFeedURL);
 
-                    long feedId;
+                    // Set up checks for handling duplicate RssFeed entries
+                    long feedId = -1;
 
-                    // If feed URL already exists, then .update() database, else .insert() database
+                    // Cursor provides access to result set returned by database query
                     // .query() returns a Cursor object, which represents the result of a query,
                     //      which points to one row of the query result.
-                    // .getString(int columnIndex) returns a String
-                    if (writableDatabase.query("blocly_db",
-                            new String[]{RssFeedTable.getColumnFeedUrl()},
-                            null, null, null, null, null).getString().equals(feedResponse.channelURL)) {
+                    // Cursor query(String table, String[] columns, String selection,
+                    //      String[] selectionArgs, String groupBy, String having, String orderBy)
+                    Cursor cursor = writableDatabase.query(rssFeedTable.getName(), null, RssFeedTable.getColumnFeedUrl() + " = ?",
+                            new String [] {feedResponse.channelFeedURL}, null, null, null);
+
+                    // If cursor contains an RssFeed table object, get the index value for that object
+                    if (cursor.moveToFirst()) {
+                        // getColumnIndex(String columnName) returns zero-based index for given
+                        //      column name, or -1 if column doesn't exist.
+                        int index = cursor.getColumnIndex("id");
+                        feedId = cursor.getLong(index);
+                    }
+
+                    // If feed URL already exists, then .update() database, else .insert() database
+                    if (feedId >= 0) {
                         // int update(String table, ContentValues values, String whereClause, String[] whereArgs)
-                        feedId = (long) writableDatabase.update("blocly_db", feedValues, );
+                        writableDatabase.update(rssFeedTable.getName(), feedValues, "id = ?", new String [] {Long.toString(feedId)});
                     } else {
                         // long insert(String table, String nullColumnHack, ContentValues values)
-                        feedId = writableDatabase.insert(rssFeedTable.getName(), null, feedValues);
+                        writableDatabase.insert(rssFeedTable.getName(), null, feedValues);
                     }
 
                     // Store the ItemResponse objects into appropriate SQLite db field
@@ -106,7 +121,7 @@ public class DataSource {
                         itemValues.put(RssItemTable.getColumnLink(), itemResponse.itemURL);
                         itemValues.put(RssItemTable.getColumnTitle(), itemResponse.itemTitle);
                         itemValues.put(RssItemTable.getColumnDescription(), itemResponse.itemDescription);
-                        // Identifies a unique ID for item table values
+                        // Identifies a unique RssItem table value
                         itemValues.put(RssItemTable.getColumnGuid(), itemResponse.itemGUID);
                         itemValues.put(RssItemTable.getColumnPubDate(), itemResponse.itemPubDate);
                         itemValues.put(RssItemTable.getColumnEnclosure(), itemResponse.itemEnclosureURL);
@@ -115,9 +130,36 @@ public class DataSource {
                         itemValues.put(RssItemTable.getColumnFavorite(), 0);
                         itemValues.put(RssItemTable.getColumnArchived(), 0);
 
-                        // long insert(String table, String nullColumnHack, ContentValues values)
-                        writableDatabase.insert(rssItemTable.getName(), null, itemValues);
+                        // Set up checks for handling duplicate RssItem entries
+                        long itemId = -1;
+
+                        // Cursor provides access to result set returned by database query
+                        // .query() returns a Cursor object, which represents the result of a query,
+                        //      which points to one row of the query result.
+                        // Cursor query(String table, String[] columns, String selection,
+                        //      String[] selectionArgs, String groupBy, String having, String orderBy)
+                        cursor = writableDatabase.query(rssItemTable.getName(), null, RssItemTable.getColumnGuid() + " = ?",
+                                new String []{itemResponse.itemGUID}, null, null, null);
+
+                        // If cursor contains an RssItem table object, get the index value for that object
+                        if (cursor.moveToFirst()) {
+                            // getColumnIndex(String columnName) returns zero-based index for given
+                            //      column name, or -1 if column doesn't exist.
+                            int index = cursor.getColumnIndex("id");
+                            itemId = cursor.getLong(index);
+                        }
+
+                        // If feed URL already exists, then .update() database, else .insert() database
+                        if (itemId >= 0) {
+                            // int update(String table, ContentValues values, String whereClause, String[] whereArgs)
+                            writableDatabase.update(rssItemTable.getName(), itemValues, "id = ?", new String [] {Long.toString(feedId)});
+                        } else {
+                            // long insert(String table, String nullColumnHack, ContentValues values)
+                            writableDatabase.insert(rssItemTable.getName(), null, itemValues);
+                        }
                     }
+                    // Close cursor
+                    cursor.close();
                 }
                 // Close database
                 writableDatabase.close();

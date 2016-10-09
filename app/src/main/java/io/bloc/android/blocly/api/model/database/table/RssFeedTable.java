@@ -19,7 +19,7 @@ public class RssFeedTable extends Table {
     // Providing a Primary Key column is required for SQLite tables.
     @Override
     public String getCreateStatement() {
-        return "CREATE_TABLE" + getName() + " ("
+        return "CREATE TABLE " + getName() + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_LINK + " TEXT,"
                 + COLUMN_TITLE + " TEXT,"
