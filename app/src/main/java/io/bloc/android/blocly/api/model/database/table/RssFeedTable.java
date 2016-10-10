@@ -1,9 +1,48 @@
 package io.bloc.android.blocly.api.model.database.table;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
+
 /**
  * Created by namlu on 01-Sep-16.
  */
 public class RssFeedTable extends Table {
+
+    // Implementing the Builder class defined in Table.Builder
+    public static class Builder implements Table.Builder {
+
+        // each instance of Builder will have its own copy of ContentValues after instantiation
+        ContentValues values = new ContentValues();
+
+        // It's best practice to make each method in a Builder-style class return itself
+        public Builder setSiteURL(String siteURL) {
+            values.put(COLUMN_LINK, siteURL);
+            return this;
+        }
+
+        public Builder setFeedURL(String feedURL) {
+            values.put(COLUMN_FEED_URL, feedURL);
+            return this;
+        }
+
+        public Builder setTitle(String title) {
+            values.put(COLUMN_TITLE, title);
+            return this;
+        }
+
+        public Builder setDescription(String description) {
+            values.put(COLUMN_DESCRIPTION, description);
+            return this;
+        }
+
+        // .insert() returns the row ID of newly inserted row, or -1 if error occurred
+        @Override
+        public long insert(SQLiteDatabase writableDB) {
+            return writableDB.insert(NAME, null, values);
+        }
+    }
+
+    private static final String NAME = "rss_feeds";
 
     private static final String COLUMN_LINK = "link";
     private static final String COLUMN_TITLE = "title";
@@ -19,7 +58,7 @@ public class RssFeedTable extends Table {
     // Providing a Primary Key column is required for SQLite tables.
     @Override
     public String getCreateStatement() {
-        return "CREATE_TABLE" + getName() + " ("
+        return "CREATE TABLE " + getName() + " ("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
                 + COLUMN_LINK + " TEXT,"
                 + COLUMN_TITLE + " TEXT,"

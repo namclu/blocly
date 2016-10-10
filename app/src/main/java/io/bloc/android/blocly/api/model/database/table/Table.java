@@ -7,6 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
  */
 public abstract class Table {
 
+    // Establish a Builder pattern for the class
+    public static interface Builder {
+        // each class implementing Builder must be capable of inserting its data into a
+        //      SQLiteDatabase object and return the row identifier of the new object
+        public long insert(SQLiteDatabase writableDB);
+    }
+
     // Each table must possess an id column
     protected static final String COLUMN_ID = "id";
 
