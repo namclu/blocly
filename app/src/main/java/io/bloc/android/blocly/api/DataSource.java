@@ -69,7 +69,7 @@ public class DataSource {
                 SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
                 List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
                         new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();
-                // Todo - why do we need to do: feedResponses.get(0)
+                // Why do we need to do: feedResponses.get(0)
                 GetFeedsNetworkRequest.FeedResponse androidCentral = feedResponses.get(0);
 
                 // One table, "rss_feeds", is meant to have an entry for each website the user
