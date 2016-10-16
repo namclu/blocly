@@ -1,8 +1,11 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +28,9 @@ import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
+import io.bloc.android.blocly.api.model.database.DatabaseOpenHelper;
+import io.bloc.android.blocly.api.model.database.table.RssFeedTable;
+import io.bloc.android.blocly.api.model.database.table.RssItemTable;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
@@ -48,6 +54,13 @@ public class BloclyActivity extends AppCompatActivity
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
+
+    // Needed for database
+    private DatabaseOpenHelper databaseOpenHelper;
+    private RssFeedTable rssFeedTable;
+    private RssItemTable rssItemTable;
+
+    private Context context = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,6 +188,37 @@ public class BloclyActivity extends AppCompatActivity
             }
         };
         drawerLayout.addDrawerListener(drawerToggle);
+
+        // Assignment 53 - Query database for all Rss items models
+        // Order items by publication date
+        // Limit items recovered to 10
+
+        // New thread to query database
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Need to initialize the database
+                databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
+                        rssFeedTable, rssItemTable);
+
+                // Open database
+                SQLiteDatabase readableDatabase = databaseOpenHelper.getReadableDatabase();
+
+                // query(String table, String[] columns, String selection, String[] selectionArgs,
+                //      String groupBy, String having, String orderBy, String limit)
+                Cursor cursor = readableDatabase.query(rssItemTable.getName(), null, null, null,
+                        null, null, RssItemTable.getColumnPubDate() + " DESC", "LIMIT 10");
+
+                String dbPath = "data.data.io.bloc.android.blocly/databases/" + rssItemTable.getName();
+
+                // SQLiteDatabase openOrCreateDatabase (File file, SQLiteDatabase.CursorFactory factory, int flags)
+                SQLiteDatabase openDatabase = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+
+                // Close cursor after finishing
+                cursor.close();
+            }
+        }).start();
+
     }
 
     @Override
