@@ -3,12 +3,14 @@ package io.bloc.android.blocly.api;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.BuildConfig;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.bloc.android.blocly.BloclyApplication;
-import io.bloc.android.blocly.BuildConfig;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
@@ -72,6 +74,10 @@ public class DataSource {
                 feedResponses = new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml")
                         .performRequest();
 
+                // Create a new RssFeed and RssItem object to pass into feeds and items
+                RssFeed tempRssFeed;
+                RssItem tempRssItem = null;
+
                 // Store the FeedResponse objects into appropriate SQLite db field
                 for (GetFeedsNetworkRequest.FeedResponse feedResponse: feedResponses) {
 
@@ -84,6 +90,14 @@ public class DataSource {
                     feedValues.put(RssFeedTable.getColumnDescription(), feedResponse.channelDescription);
                     // Identifies a unique RssFeed table value
                     feedValues.put(RssFeedTable.getColumnFeedUrl(), feedResponse.channelFeedURL);
+
+                    // Assign values to RssFeed object
+                    // RssFeed(String title, String description, String siteUrl, String feedUrl)
+                    tempRssFeed = new RssFeed(
+                            feedResponse.channelTitle,
+                            feedResponse.channelDescription,
+                            feedResponse.channelURL,
+                            feedResponse.channelFeedURL);
 
                     // Set up checks for handling duplicate RssFeed entries
                     long feedId = -1;
@@ -108,9 +122,15 @@ public class DataSource {
                     if (feedId >= 0) {
                         // int update(String table, ContentValues values, String whereClause, String[] whereArgs)
                         writableDatabase.update(rssFeedTable.getName(), feedValues, "id = ?", new String [] {Long.toString(feedId)});
+
+                        // Update an existing RssFeed in feeds
+                        feeds.add(tempRssFeed);
                     } else {
                         // long insert(String table, String nullColumnHack, ContentValues values)
                         writableDatabase.insert(rssFeedTable.getName(), null, feedValues);
+
+                        // Add a new RssFeed to feeds
+                        feeds.add(tempRssFeed);
                     }
 
                     // Store the ItemResponse objects into appropriate SQLite db field
@@ -133,6 +153,28 @@ public class DataSource {
                         // Set up checks for handling duplicate RssItem entries
                         long itemId = -1;
 
+                        // SimpleDateFormat is a class for formatting and parsing dates in
+                        //      locale-sensitive manner.
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+
+                        // Assign values to RssItem object
+                        // RssItem(String guid, String title, String description, String url, String imageUrl,
+                        //      long rssFeedId, long datePublished, boolean favorite, boolean archived)
+                        try {
+                            tempRssItem = new RssItem(
+                                    itemResponse.itemGUID,
+                                    itemResponse.itemTitle,
+                                    itemResponse.itemDescription,
+                                    itemResponse.itemURL,
+                                    null,
+                                    0,
+                                    dateFormat.parse(itemResponse.itemPubDate).getTime(),
+                                    false,
+                                    false);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
                         // Cursor provides access to result set returned by database query
                         // .query() returns a Cursor object, which represents the result of a query,
                         //      which points to one row of the query result.
@@ -153,9 +195,15 @@ public class DataSource {
                         if (itemId >= 0) {
                             // int update(String table, ContentValues values, String whereClause, String[] whereArgs)
                             writableDatabase.update(rssItemTable.getName(), itemValues, "id = ?", new String [] {Long.toString(feedId)});
+
+                            // Update an existing RssItem in items
+                            items.add(tempRssItem);
                         } else {
                             // long insert(String table, String nullColumnHack, ContentValues values)
                             writableDatabase.insert(rssItemTable.getName(), null, itemValues);
+
+                            // Add a new RssItem in items
+                            items.add(tempRssItem);
                         }
                     }
                     // Close cursor
