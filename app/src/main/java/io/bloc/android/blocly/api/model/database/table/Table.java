@@ -1,5 +1,6 @@
 package io.bloc.android.blocly.api.model.database.table;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
@@ -25,5 +26,41 @@ public abstract class Table {
     // Each Table is responsible for executing its own upgrades
     public void onUpgrade(SQLiteDatabase writableDatabase, int oldVersion, int newVersion) {
         // Nothing
+    }
+
+    // 54: Returns a Cursor object, which points to a specific row for the given rowId
+    public Cursor fetchRow(SQLiteDatabase readOnlyDatabase, long rowId) {
+        // query(boolean distinct, String table, String[] columns, String selection,
+        //      String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
+        return readOnlyDatabase.query(true, getName(), null, COLUMN_ID + " = ?",
+                new String[] {String.valueOf(rowId)}, null, null, null, null);
+    }
+
+    // 54: Returns a String object for the specified column parameter
+    protected static String getString(Cursor cursor, String column) {
+        int columnIndex = cursor.getColumnIndex(column);
+
+        // Verify whether the column is present in the Cursor before recovering its respective data
+        if (columnIndex == -1) {
+            return "";
+        }
+        return cursor.getString(columnIndex);
+    }
+
+    // 54: Returns a Long object for the specified column parameter
+    protected static long getLong(Cursor cursor, String column) {
+        int columnIndex = cursor.getColumnIndex(column);
+
+        // Verify whether the column is present in the Cursor before recovering its respective data
+        if (columnIndex == -1) {
+            return -1l;
+        }
+        return cursor.getLong(columnIndex);
+    }
+
+    // 54: Databases store boolean values as 1 for true, 0 for false
+    // Returns a 1 (true) if the integer associated with the column is equal to 1
+    protected static boolean getBoolean(Cursor cursor, String column) {
+        return getLong(cursor, column) == 1l;
     }
 }

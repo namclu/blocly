@@ -1,5 +1,7 @@
 package io.bloc.android.blocly.api;
 
+import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.text.DateFormat;
@@ -28,6 +30,10 @@ import io.bloc.android.blocly.api.network.GetFeedsNetworkRequest;
  */
 public class DataSource {
 
+    // 54: DataSource will form its broadcast Intent by specifying the Intent's action, the static String
+    // ACTION_DOWNLOAD_COMPLETED string = io.bloc.android.blocly.api.DataSource.ACTION_DOWNLOAD_COMPLETED
+    public static final String ACTION_DOWNLOAD_COMPLETED = DataSource.class.getCanonicalName().concat(".ACTION_DOWNLOAD_COMPLETED");
+
     // Fields needed for Database
     private DatabaseOpenHelper databaseOpenHelper;
     private RssFeedTable rssFeedTable;
@@ -48,7 +54,6 @@ public class DataSource {
 
         feeds = new ArrayList<RssFeed>();
         items = new ArrayList<RssItem>();
-        createFakeData();
 
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
@@ -82,6 +87,9 @@ public class DataSource {
                         .setDescription(androidCentral.channelDescription)
                         .insert(writableDatabase);
 
+                // 54: New Rss items ArrayList to be used later
+                List<RssItem> newRSSItems = new ArrayList<RssItem>();
+
                 // The other table, "rss_items", will feature every item from every subscription
                 for (GetFeedsNetworkRequest.ItemResponse itemResponse: androidCentral.channelItems) {
                     // Attempt to convert the downloaded String into Unix time
@@ -96,7 +104,8 @@ public class DataSource {
                     }
 
                     // Insert the RSS item into the database
-                    new RssItemTable.Builder()
+                    // 54: Store the row identifier which results from inserting the RSS item
+                    long newItemRowId = new RssItemTable.Builder()
                             .setTitle(itemResponse.itemTitle)
                             .setDescription(itemResponse.itemDescription)
                             .setEnclosure(itemResponse.itemEnclosureURL)
@@ -108,7 +117,34 @@ public class DataSource {
                             // This forms a relationship between each RSS item and the AndroidCentral feed.
                             .setRSSFeed(androidCentralFeedId)
                             .insert(writableDatabase);
+
+                    // 54: Use the row identifier to query for its corresponding row
+                    Cursor itemCursor = rssItemTable.fetchRow(databaseOpenHelper.getReadableDatabase(), newItemRowId);
+
+                    // 54: Cursors initially reference a non-existent row, index -1.
+                    // In order to place the Cursor at its first resulting row, we must invoke moveToFirst()
+                    itemCursor.moveToFirst();
+                    RssItem newRssItem = itemFromCursor(itemCursor);
+                    newRSSItems.add(newRssItem);
+
+                    // 54: Close the cursor
+                    itemCursor.close();
                 }
+                // 54: Use the row identifier to query for its corresponding row
+                Cursor androidCentralCursor = rssFeedTable.fetchRow(databaseOpenHelper.getReadableDatabase(), androidCentralFeedId);
+
+                androidCentralCursor.moveToFirst();
+                RssFeed androidCentralRSSFeed = feedFromCursor(androidCentralCursor);
+
+                // 54: Close the cursor
+                androidCentralCursor.close();
+
+                // 54: Add the new newRSSItems and androidCentralRssFeed into items and feeds list respectively
+                items.addAll(newRSSItems);
+                feeds.add(androidCentralRSSFeed);
+
+                // 54: To send a broadcast, use Context's sendBroadcast(Intent)
+                BloclyApplication.getSharedInstance().sendBroadcast(new Intent(ACTION_DOWNLOAD_COMPLETED));
             }
         }).start();
     }
@@ -119,6 +155,23 @@ public class DataSource {
 
     public List<RssItem> getItems(){
         return items;
+    }
+
+    // 54: Pulls information from the Cursor and places it directly into RssFeed's constructor using
+    //      newly created get methods in RssFeedTable.java
+    static RssFeed feedFromCursor(Cursor cursor) {
+        return new RssFeed(RssFeedTable.getTitle(cursor), RssFeedTable.getDescription(cursor),
+                RssFeedTable.getSiteURL(cursor), RssFeedTable.getFeedUrl(cursor));
+    }
+
+    // 54: Pulls information from the Cursor and places it directly into RssItem's constructor using
+    //      newly created get methods in RssItemTable.java
+    static RssItem itemFromCursor(Cursor cursor) {
+        return new RssItem(RssItemTable.getGUID(cursor), RssItemTable.getTitle(cursor),
+                RssItemTable.getDescription(cursor), RssItemTable.getLink(cursor),
+                RssItemTable.getEnclosure(cursor), RssItemTable.getRssFeedId(cursor),
+                RssItemTable.getPubDate(cursor), RssItemTable.getFavorite(cursor),
+                RssItemTable.getArchived(cursor));
     }
 
     void createFakeData() {

@@ -1,7 +1,10 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.animation.ValueAnimator;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
+import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
@@ -48,6 +52,16 @@ public class BloclyActivity extends AppCompatActivity
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
+
+    // 54: Custom BroadcastReceiver which, after receiving the Intent,
+    //      resets the data found in itemAdapter and navigationDrawerAdapter
+    private BroadcastReceiver dataSourceBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            itemAdapter.notifyDataSetChanged();
+            navigationDrawerAdapter.notifyDataSetChanged();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +95,10 @@ public class BloclyActivity extends AppCompatActivity
         navigationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         navigationRecyclerView.setItemAnimator(new DefaultItemAnimator());
         navigationRecyclerView.setAdapter(navigationDrawerAdapter);
+
+        // 54: Register BroadcastReceivers before they can receive broadcasts
+        // registerReceiver(BroadcastReceiver receiver, IntentFiler filter)
+        registerReceiver(dataSourceBroadcastReceiver, new IntentFilter(DataSource.ACTION_DOWNLOAD_COMPLETED));
 
         // Recover the instance of ActionBar associated with ToolBar
         // and invoke setDisplayHomeAsUpEnabled(boolean) to allow this behavior
@@ -234,6 +252,14 @@ public class BloclyActivity extends AppCompatActivity
         animateShareItem(itemAdapter.getExpandedItem() != null);
         return super.onCreateOptionsMenu(menu);
     }
+
+    // 54: All BroadcastReceivers must be unregistered before they are deallocated (garbage collected)
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(dataSourceBroadcastReceiver);
+    }
+
 
     /*NavigationDrawerAdapter Delegate*/
 
