@@ -16,6 +16,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -193,32 +194,36 @@ public class BloclyActivity extends AppCompatActivity
         // Order items by publication date
         // Limit items recovered to 10
 
-        // New thread to query database
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Need to initialize the database
-                databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
-                        rssFeedTable, rssItemTable);
+        // Open database
+        SQLiteDatabase readableDatabase = databaseOpenHelper.getReadableDatabase();
 
-                // Open database
-                SQLiteDatabase readableDatabase = databaseOpenHelper.getReadableDatabase();
+        // Initialize rssItemTable
+        rssItemTable = new RssItemTable();
 
-                // query(String table, String[] columns, String selection, String[] selectionArgs,
-                //      String groupBy, String having, String orderBy, String limit)
-                Cursor cursor = readableDatabase.query(rssItemTable.getName(), null, null, null,
-                        null, null, RssItemTable.getColumnPubDate() + " DESC", "LIMIT 10");
+        // query(String table, String[] columns, String selection, String[] selectionArgs,
+        //      String groupBy, String having, String orderBy, String limit)
+        Cursor cursor = readableDatabase.query(rssItemTable.getName(), null, null, null,
+                null, null, RssItemTable.getColumnPubDate() + " DESC", "10");
 
-                String dbPath = "data.data.io.bloc.android.blocly/databases/" + rssItemTable.getName();
+        // Output contents of cursor
+        if (cursor.moveToFirst()) {
+            int row = 0;
 
-                // SQLiteDatabase openOrCreateDatabase (File file, SQLiteDatabase.CursorFactory factory, int flags)
-                SQLiteDatabase openDatabase = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+            do {
+                for (int i = 0; i < cursor.getColumnCount(); i++) {
+                    Log.d(rssItemTable.getName(), cursor.getColumnName(i) + ": " + cursor.getString(i));
+                }
+                row++;
+            } while (cursor.moveToNext());
+        }
 
-                // Close cursor after finishing
-                cursor.close();
-            }
-        }).start();
+        // String dbPath = "data.data.io.bloc.android.blocly/databases/" + rssItemTable.getName();
 
+        // SQLiteDatabase openOrCreateDatabase (File file, SQLiteDatabase.CursorFactory factory, int flags)
+        // SQLiteDatabase openDatabase = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+
+        // Close cursor after finishing
+        cursor.close();
     }
 
     @Override
