@@ -194,11 +194,12 @@ public class BloclyActivity extends AppCompatActivity
         // Order items by publication date
         // Limit items recovered to 10
 
-        // Open database
-        SQLiteDatabase readableDatabase = databaseOpenHelper.getReadableDatabase();
-
         // Initialize rssItemTable
         rssItemTable = new RssItemTable();
+
+        // Open database
+        databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(), rssItemTable);
+        SQLiteDatabase readableDatabase = databaseOpenHelper.getReadableDatabase();
 
         // query(String table, String[] columns, String selection, String[] selectionArgs,
         //      String groupBy, String having, String orderBy, String limit)
@@ -210,17 +211,14 @@ public class BloclyActivity extends AppCompatActivity
             int row = 0;
 
             do {
+                Log.d("TEST", "-----");
+                Log.d(rssItemTable.getName(), "ROW: " + row);
                 for (int i = 0; i < cursor.getColumnCount(); i++) {
                     Log.d(rssItemTable.getName(), cursor.getColumnName(i) + ": " + cursor.getString(i));
                 }
                 row++;
             } while (cursor.moveToNext());
         }
-
-        // String dbPath = "data.data.io.bloc.android.blocly/databases/" + rssItemTable.getName();
-
-        // SQLiteDatabase openOrCreateDatabase (File file, SQLiteDatabase.CursorFactory factory, int flags)
-        // SQLiteDatabase openDatabase = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
 
         // Close cursor after finishing
         cursor.close();
