@@ -4,6 +4,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import io.bloc.android.blocly.BloclyApplication;
+import io.bloc.android.blocly.api.model.database.DatabaseOpenHelper;
+
 /**
  * Created by namlu on 01-Sep-16.
  */
@@ -137,5 +140,40 @@ public class RssItemTable extends Table {
                 // Both COLUMN_FAVORITE and COLUMN_ARCHIVE are initialized to 0, interpreted as 'false'
                 + COLUMN_FAVORITE + " INTEGER DEFAULT 0,"
                 + COLUMN_ARCHIVED + " INTEGER DEFAULT 0)";
+    }
+
+    /*
+     * Assign 54: Implement the following queries in RssItemTable:
+     * 	 Fetch all archived RSS items.
+	 *   Fetch all archived RSS items from a particular RSS feed.
+	 *   Fetch all favorited RSS items.
+	 *   Fetch all favorited RSS items from a particular RSS feed.
+	 *   Fetch all items from a particular RSS feed.
+     *   Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
+     */
+
+    // Declare database variables
+    private DatabaseOpenHelper databaseOpenHelper;
+    private SQLiteDatabase readableDatabase;
+    private Cursor itemCursor;
+
+    // Fetch all archived RSS items.
+    public void fetchAllArchived(RssItemTable rssItemTable) {
+        // Initialize database variables
+        databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(), rssItemTable);
+        readableDatabase = databaseOpenHelper.getReadableDatabase();
+
+        // For the given RssItemTable, find a row where COLUMN_ARCHIVED = 1 (true).
+        // query(boolean distinct, String table, String[] columns, String selection,
+        //      String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
+        itemCursor.moveToFirst();
+        itemCursor = readableDatabase.query(true, getName(), null, COLUMN_ARCHIVED + " = ?",
+                new String[] {String.valueOf(1)}, null, null, null, null);
+
+        // If COLUMN_ARCHIVED is true, then add the row to the RssItemTable
+        if (getArchived(itemCursor)) {
+            //Todo: Add row to RssItemTable
+            rssItemTable.fetchRow(readableDatabase, rowId);
+        }
     }
 }
