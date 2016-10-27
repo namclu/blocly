@@ -147,6 +147,9 @@ public class DataSource {
                 BloclyApplication.getSharedInstance().sendBroadcast(new Intent(ACTION_DOWNLOAD_COMPLETED));
             }
         }).start();
+
+        // Assign 54: Use new RssItemTable methods
+        rssItemTable.fetchAllArchived();
     }
 
     public List<RssFeed> getFeeds(){
@@ -159,14 +162,14 @@ public class DataSource {
 
     // 54: Pulls information from the Cursor and places it directly into RssFeed's constructor using
     //      newly created get methods in RssFeedTable.java
-    static RssFeed feedFromCursor(Cursor cursor) {
+    public static RssFeed feedFromCursor(Cursor cursor) {
         return new RssFeed(RssFeedTable.getTitle(cursor), RssFeedTable.getDescription(cursor),
                 RssFeedTable.getSiteURL(cursor), RssFeedTable.getFeedUrl(cursor));
     }
 
     // 54: Pulls information from the Cursor and places it directly into RssItem's constructor using
     //      newly created get methods in RssItemTable.java
-    static RssItem itemFromCursor(Cursor cursor) {
+    public static RssItem itemFromCursor(Cursor cursor) {
         return new RssItem(RssItemTable.getGUID(cursor), RssItemTable.getTitle(cursor),
                 RssItemTable.getDescription(cursor), RssItemTable.getLink(cursor),
                 RssItemTable.getEnclosure(cursor), RssItemTable.getRssFeedId(cursor),

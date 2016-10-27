@@ -3,8 +3,13 @@ package io.bloc.android.blocly.api.model.database.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import java.util.List;
 
 import io.bloc.android.blocly.BloclyApplication;
+import io.bloc.android.blocly.api.DataSource;
+import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.api.model.database.DatabaseOpenHelper;
 
 /**
@@ -156,24 +161,46 @@ public class RssItemTable extends Table {
     private DatabaseOpenHelper databaseOpenHelper;
     private SQLiteDatabase readableDatabase;
     private Cursor itemCursor;
+    private List<RssItem> rssItems;
+    private RssItemTable rssItemTable;
 
     // Fetch all archived RSS items.
-    public void fetchAllArchived(RssItemTable rssItemTable) {
+    // Returns a List<RssItem> containing only RssItem where COLUMN_ARCHIVED = 1 (true)
+    public List<RssItem> fetchAllArchived() {
         // Initialize database variables
+        rssItemTable = new RssItemTable();
         databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(), rssItemTable);
         readableDatabase = databaseOpenHelper.getReadableDatabase();
 
         // For the given RssItemTable, find a row where COLUMN_ARCHIVED = 1 (true).
         // query(boolean distinct, String table, String[] columns, String selection,
         //      String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
-        itemCursor.moveToFirst();
-        itemCursor = readableDatabase.query(true, getName(), null, COLUMN_ARCHIVED + " = ?",
-                new String[] {String.valueOf(1)}, null, null, null, null);
+        itemCursor = readableDatabase.query(true, getName(), null, null,
+                null, null, null, null, null);
 
-        // If COLUMN_ARCHIVED is true, then add the row to the RssItemTable
-        if (getArchived(itemCursor)) {
-            //Todo: Add row to RssItemTable
-            rssItemTable.fetchRow(readableDatabase, rowId);
+        if (itemCursor.moveToFirst()) {
+            //int itemRowId = 0;
+
+            do {
+                // For loop to iterate through RssItem table
+                for (int itemRowId = 0; itemRowId < itemCursor.getCount(); itemRowId++) {
+                    // fetchRow() returns a Cursor object, which points to a specific row for the given rowId
+                    itemCursor = rssItemTable.fetchRow(readableDatabase, itemRowId);
+
+                    // If COLUMN_ARCHIVED = 1 (true) for this row, add it to RssItemTable
+                    if (getArchived(itemCursor)) {
+                        RssItem archivedRssItem = DataSource.itemFromCursor(itemCursor);
+                        // Add row to RssItemTable
+                        rssItems.add(archivedRssItem);
+                    }
+                    Log.d(getName(), COLUMN_TITLE + itemRowId + ": " + getTitle(itemCursor));
+                }
+                //itemRowId++;
+            } while (itemCursor.moveToNext());
         }
+        // Close cursor
+        itemCursor.close();
+
+        return rssItems;
     }
 }
