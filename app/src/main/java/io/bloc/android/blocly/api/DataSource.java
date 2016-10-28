@@ -13,12 +13,12 @@ import java.util.Locale;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.BuildConfig;
-import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.api.model.database.DatabaseOpenHelper;
 import io.bloc.android.blocly.api.model.database.table.RssFeedTable;
 import io.bloc.android.blocly.api.model.database.table.RssItemTable;
+import io.bloc.android.blocly.api.model.database.table.Table;
 import io.bloc.android.blocly.api.network.GetFeedsNetworkRequest;
 
 /**
@@ -159,32 +159,20 @@ public class DataSource {
 
     // 54: Pulls information from the Cursor and places it directly into RssFeed's constructor using
     //      newly created get methods in RssFeedTable.java
+    // 55: Use new Table.getRowId() method to supply required row Id
     static RssFeed feedFromCursor(Cursor cursor) {
-        return new RssFeed(RssFeedTable.getTitle(cursor), RssFeedTable.getDescription(cursor),
+        return new RssFeed(Table.getRowId(cursor), RssFeedTable.getTitle(cursor), RssFeedTable.getDescription(cursor),
                 RssFeedTable.getSiteURL(cursor), RssFeedTable.getFeedUrl(cursor));
     }
 
     // 54: Pulls information from the Cursor and places it directly into RssItem's constructor using
     //      newly created get methods in RssItemTable.java
+    // 55: Use new Table.getRowId() method to supply required row Id
     static RssItem itemFromCursor(Cursor cursor) {
-        return new RssItem(RssItemTable.getGUID(cursor), RssItemTable.getTitle(cursor),
+        return new RssItem(Table.getRowId(cursor), RssItemTable.getGUID(cursor), RssItemTable.getTitle(cursor),
                 RssItemTable.getDescription(cursor), RssItemTable.getLink(cursor),
                 RssItemTable.getEnclosure(cursor), RssItemTable.getRssFeedId(cursor),
                 RssItemTable.getPubDate(cursor), RssItemTable.getFavorite(cursor),
                 RssItemTable.getArchived(cursor));
-    }
-
-    void createFakeData() {
-        feeds.add(new RssFeed("My Favorite Feed",
-                "This feed is just incredible, I can't even begin to tell you…",
-                "http://favoritefeed.net", "http://feeds.feedburner.com/favorite_feed?format=xml"));
-        for (int i = 0; i < 10; i++) {
-            items.add(new RssItem(String.valueOf(i),
-                    BloclyApplication.getSharedInstance().getString(R.string.placeholder_headline) + " " + i,
-                    BloclyApplication.getSharedInstance().getString(R.string.placeholder_content),
-                    "http://favoritefeed.net?story_id=an-incredible-news-story",
-                    "https://bloc-global-assets.s3.amazonaws.com/images-android/foundation/silly-dog.jpg",
-                    0, System.currentTimeMillis(), false, false));
-        }
     }
 }
