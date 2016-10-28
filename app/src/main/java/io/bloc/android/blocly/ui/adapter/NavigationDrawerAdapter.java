@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
@@ -25,15 +26,33 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         NAVIGATION_OPTION_ARCHIVED
     }
 
+    // 55: Data source interface for NavigationDrawerAdapter
+    public static interface NavigationDrawerAdapterDataSource{
+        public List<RssFeed> getFeeds(NavigationDrawerAdapter adapter);
+    }
+
     public static interface NavigationDrawerAdapterDelegate{
         public void didSelectNavigationOption(NavigationDrawerAdapter adapter, NavigationOption navigationOption);
         public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed);
     }
 
     // NavigationDrawerAdapter will not own the delegate object and therefore when the object
-    // is de-referenced elsewhere, NavigationDrawerAdapter should not keep it
+    //      is de-referenced elsewhere, NavigationDrawerAdapter should not keep it
     // A WeakReference allows us to use an object as long as a strong reference to it exists somewhere
-    WeakReference<NavigationDrawerAdapterDelegate> delegate;
+    // 55: Update data to use new NavigationDrawerAdapterDataSource
+    WeakReference<NavigationDrawerAdapterDataSource> dataSource;
+
+    // 55: Create getter/setter for new NavigationDrawerAdapterDataSource
+    public NavigationDrawerAdapterDataSource getDataSource() {
+        if (dataSource == null) {
+            return null;
+        }
+        return dataSource.get();
+    }
+
+    public void setDataSource(NavigationDrawerAdapterDataSource dataSource) {
+        this.dataSource = new WeakReference<NavigationDrawerAdapterDataSource>(dataSource);
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int position) {
@@ -54,7 +73,8 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         // at position 3 within the adapter but at position 0 in the original RssFeed array.
         if(position >= NavigationOption.values().length){
             int feedPosition = position - NavigationOption.values().length;
-            rssFeed = BloclyApplication.getSharedDataSource().getFeeds().get(feedPosition);
+            // 55: use new data source in places where getFeeds() was used
+            rssFeed = getDataSource().getFeeds(this).get(feedPosition);
         }
         // update(int position, RssFeed rssFeed)
         viewHolder.update(position, rssFeed);
@@ -64,10 +84,14 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
     public int getItemCount() {
         // Number of items our Adapter provides is returned by getItemCount()
         // NavigationOption.values().length = total number of navigation options
-        // BloclyApplication.getSharedDataSource().getFeeds().size() = with the number of RSS feeds found in DataSource
+        // getDataSource().getFeeds(this).size() = with the number of RSS feeds found in DataSource
         // This gives us a total of four items to display.
+        if (getDataSource() == null) {
+            return NavigationOption.values().length;
+        }
         return NavigationOption.values().length
-                + BloclyApplication.getSharedDataSource().getFeeds().size();
+                // 55: use new data source in places where getFeeds() was used
+                + getDataSource().getFeeds(this).size();
     }
 
     // Add getter and setter method for delegate

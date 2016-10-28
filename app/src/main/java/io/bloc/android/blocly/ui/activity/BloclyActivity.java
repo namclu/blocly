@@ -23,8 +23,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssFeed;
@@ -39,7 +39,8 @@ public class BloclyActivity extends AppCompatActivity
         implements
         NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
         ItemAdapter.DataSource,
-        ItemAdapter.Delegate{
+        ItemAdapter.Delegate,
+        NavigationDrawerAdapter.NavigationDrawerAdapterDataSource{
 
     // Add external reference to RecyclerView
     private RecyclerView recyclerView;
@@ -52,6 +53,9 @@ public class BloclyActivity extends AppCompatActivity
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
+    // 55: BloclyActivity now implements its own lists
+    private List<RssFeed> allFeeds = new ArrayList<RssFeed>();
+    private List<RssItem> currentItems = new ArrayList<RssItem>();
 
     // 54: Custom BroadcastReceiver which, after receiving the Intent,
     //      resets the data found in itemAdapter and navigationDrawerAdapter
@@ -81,6 +85,9 @@ public class BloclyActivity extends AppCompatActivity
 
         // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
         navigationDrawerAdapter.setDelegate(this);
+
+        // 55: Todo
+        navigationDrawerAdapter.setDataSource(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
@@ -279,27 +286,43 @@ public class BloclyActivity extends AppCompatActivity
     }
 
     /*
-    * ItemAdapter.DataSource
-    * */
+     * 55: NavigationDrawerAdapter.DataSource
+     */
+
+    @Override
+    public List<RssFeed> getFeeds(NavigationDrawerAdapter adapter) {
+        return allFeeds;
+    }
+
+    /*
+     * ItemAdapter.DataSource
+     */
 
     @Override
     public RssItem getRssItem(ItemAdapter itemAdapter, int position) {
-        // getSharedDataSource() returns a DataSource
-        // getItems() returns a List<RssItem>
         // get() returns a RssItem
-        return BloclyApplication.getSharedDataSource().getItems().get(position);
+        return currentItems.get(position);
     }
 
     @Override
     public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
         // getFeeds() returns a List<RssFeed>
         // get() returns a RssFeed
-        return BloclyApplication.getSharedDataSource().getFeeds().get(0);
+        // 55: previous assumption was that feed was found at 0th index, but updating so that
+        //      multiple feeds are supported
+        RssItem rssItem = currentItems.get(position);
+        for (RssFeed feed: allFeeds) {
+            // 55: Todo
+            if (rssItem.getRssFeedId() == feed.getRowId()){
+                return feed;
+            }
+        }
+        return null;
     }
 
     @Override
     public int getItemCount(ItemAdapter itemAdapter) {
-        return BloclyApplication.getSharedDataSource().getItems().size();
+        return currentItems.size();
     }
 
     /*
@@ -316,10 +339,9 @@ public class BloclyActivity extends AppCompatActivity
         if(itemAdapter.getExpandedItem() != null){
             // If ItemAdapter was previously expanded, contract it
             // Recover its position within the list by invoking List's indexOf(Object) method
-            // getSharedDataSource() returns a DataSource
-            // getItems() returns a List<RssItem>
+            // currentItems is an ArrayList<RssItems>
             // indexOf() returns an int
-            positionToContract = BloclyApplication.getSharedDataSource().getItems().indexOf(itemAdapter.getExpandedItem());
+            positionToContract = currentItems.indexOf(itemAdapter.getExpandedItem());
 
             // Only check the edge-case condition when both expanding and contracting Views are visible on screen
             // findViewByPosition() returns 'position' if View is currently onscreen, 'null' otherwise
@@ -331,7 +353,7 @@ public class BloclyActivity extends AppCompatActivity
 
         // When a new item is clicked, recover its position within the list and set it as the expanded item
         if(itemAdapter.getExpandedItem() != rssItem){
-            positionToExpand = BloclyApplication.getSharedDataSource().getItems().indexOf(rssItem);
+            positionToExpand = currentItems.indexOf(rssItem);
             itemAdapter.setExpandedItem(rssItem);
         }else{
             // If user clicks on the expanded item, contract it by resetting ItemAdapter's expanded item to null

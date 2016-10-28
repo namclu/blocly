@@ -39,8 +39,12 @@ public class DataSource {
     private RssFeedTable rssFeedTable;
     private RssItemTable rssItemTable;
 
-    private List<RssFeed> feeds;
-    private List<RssItem> items;
+    /*
+     * 55: Deleted private List<RssFeed> feeds; and private List<RssItem> items; (and their uses)
+     *      so that DataSource will now pass data models to the elements that requested them and
+     *      allow that component to own the data.
+     *
+     */
 
     public DataSource(){
         // Database tables created
@@ -51,9 +55,6 @@ public class DataSource {
         // .getSharedInstance() returns an instance of BloclyApplication
         databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
                 rssFeedTable, rssItemTable);
-
-        feeds = new ArrayList<RssFeed>();
-        items = new ArrayList<RssItem>();
 
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
@@ -147,14 +148,6 @@ public class DataSource {
                 BloclyApplication.getSharedInstance().sendBroadcast(new Intent(ACTION_DOWNLOAD_COMPLETED));
             }
         }).start();
-    }
-
-    public List<RssFeed> getFeeds(){
-        return feeds;
-    }
-
-    public List<RssItem> getItems(){
-        return items;
     }
 
     // 54: Pulls information from the Cursor and places it directly into RssFeed's constructor using
