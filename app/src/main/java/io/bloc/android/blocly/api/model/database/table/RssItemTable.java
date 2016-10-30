@@ -169,6 +169,35 @@ public class RssItemTable extends Table {
                 " WHERE " + COLUMN_ARCHIVED + " = 0",
                 null);
 
+        if (itemCursor.moveToFirst()) {
+            // While there are still items in Cursor, add them to RssItemTable
+            do {
+                rssItems.add(DataSource.itemFromCursor(itemCursor));
+            } while (itemCursor.moveToNext());
+        }
+
+        // Test output
+        RssItemTable.testFetch(itemCursor, rssItems);
+
+        itemCursor.close();
+        return rssItems;
+    }
+
+    // Fetch all archived RSS items from a particular rssFeed
+    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, String rssFeed) {
+        // Initialize variables
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+
+        // Return a List<RssItem>
+        return rssItems;
+    }
+
+    public static void testFetch(Cursor itemCursor, List<RssItem> rssItems) {
+
+        RssItemTable rssItemTable = new RssItemTable();
+
         // Go through Cursor and add each of its row to List<RssItem>
         if (itemCursor.moveToFirst()) {
             int row = 0;
@@ -185,17 +214,5 @@ public class RssItemTable extends Table {
                 row++;
             } while (itemCursor.moveToNext());
         }
-        // Return a List<RssItem>
-        return rssItems;
-    }
-
-    // Fetch all archived RSS items from a particluar rssFeed
-    public static List<RssItem> feachAllArchived(SQLiteDatabase readableDatabase, String rssFeed) {
-        // Initialize variables
-        List<RssItem> rssItems = new ArrayList<RssItem>();
-        RssItemTable rssItemTable = new RssItemTable();
-
-        // Return a List<RssItem>
-        return rssItems;
     }
 }
