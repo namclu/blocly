@@ -64,6 +64,14 @@ public class RssFeedTable extends Table {
         return getString(cursor, COLUMN_FEED_URL);
     }
 
+    // 55: Method to help detect whether a feed already exists on the database
+    // query(boolean distinct, String table, String[] columns, String selection, String[] selectionArgs,
+    //      String groupBy, String having, String orderBy, String limit)
+    public static Cursor fetchFeedWithURL(SQLiteDatabase readonlyDatabase, String feedURL) {
+        return readonlyDatabase.query(true, NAME, null, COLUMN_FEED_URL + " = ?", new String[] {feedURL},
+                null, null, null, null);
+    }
+
     private static final String NAME = "rss_feeds";
 
     private static final String COLUMN_LINK = "link";

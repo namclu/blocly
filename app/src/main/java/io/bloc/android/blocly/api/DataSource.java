@@ -3,6 +3,7 @@ package io.bloc.android.blocly.api;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -10,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.BuildConfig;
@@ -20,6 +23,7 @@ import io.bloc.android.blocly.api.model.database.table.RssFeedTable;
 import io.bloc.android.blocly.api.model.database.table.RssItemTable;
 import io.bloc.android.blocly.api.model.database.table.Table;
 import io.bloc.android.blocly.api.network.GetFeedsNetworkRequest;
+import io.bloc.android.blocly.api.network.NetworkRequest;
 
 /**
  * Created by namlu on 18-Jun-16.
@@ -30,20 +34,24 @@ import io.bloc.android.blocly.api.network.GetFeedsNetworkRequest;
  */
 public class DataSource {
 
-    // 54: DataSource will form its broadcast Intent by specifying the Intent's action, the static String
-    // ACTION_DOWNLOAD_COMPLETED string = io.bloc.android.blocly.api.DataSource.ACTION_DOWNLOAD_COMPLETED
-    public static final String ACTION_DOWNLOAD_COMPLETED = DataSource.class.getCanonicalName().concat(".ACTION_DOWNLOAD_COMPLETED");
+    // 55: Interface will provide a means for external classes to make asynchronous requests of DataSource
+    public static interface Callback<Result> {
+        public void onSuccess(Result result);
+        public void onError(String errorMessage);
+    }
 
     // Fields needed for Database
     private DatabaseOpenHelper databaseOpenHelper;
     private RssFeedTable rssFeedTable;
     private RssItemTable rssItemTable;
 
+    // 55: ExecutorService allows the management of tasks to process and can terminate them as well
+    private ExecutorService executorService;
+
     /*
-     * 55: Deleted private List<RssFeed> feeds; and private List<RssItem> items; (and their uses)
+     * 55: Deleted all private List<RssFeed> feeds; and private List<RssItem> items; (and their uses)
      *      so that DataSource will now pass data models to the elements that requested them and
      *      allow that component to own the data.
-     *
      */
 
     public DataSource(){
@@ -51,11 +59,18 @@ public class DataSource {
         rssFeedTable = new RssFeedTable();
         rssItemTable = new RssItemTable();
 
+        // 55: Single thread, tasks will be executed in the order they arrive
+        executorService = Executors.newSingleThreadExecutor();
+
         // Both Table fields are kept w/in DataSource and act as primary access points for models
         // .getSharedInstance() returns an instance of BloclyApplication
         databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
                 rssFeedTable, rssItemTable);
 
+        // 55: Todo
+        if (BuildConfig.DEBUG && true) {
+            BloclyApplication.getSharedInstance().deleteDatabase("blocly_db");
+        }
         // Test the RSS feed request
         // We don't want to block the interface from responding when we make our
         // network request, therefore we place it in a background thread
@@ -69,30 +84,45 @@ public class DataSource {
                 if (BuildConfig.DEBUG && true) {
                     BloclyApplication.getSharedInstance().deleteDatabase("blocly_db");
                 }
-                // Until getWritableDatabase() is invoked, our database will not be created nor opened
-                // getReadableDatabase() may also be used, however this method will not upgrade
-                // the database even if the versions are mismatched
-                SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
-                List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
-                        new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();
-                // Why do we need to do: feedResponses.get(0)
-                GetFeedsNetworkRequest.FeedResponse androidCentral = feedResponses.get(0);
 
-                // One table, "rss_feeds", is meant to have an entry for each website the user
-                //      has subscribed to
-                // androidCentralFeedID returns the row ID of newly inserted row, or -1 if error occurred
-                long androidCentralFeedId = new RssFeedTable.Builder()
-                        .setFeedURL(androidCentral.channelFeedURL)
-                        .setSiteURL(androidCentral.channelURL)
-                        .setTitle(androidCentral.channelTitle)
-                        .setDescription(androidCentral.channelDescription)
-                        .insert(writableDatabase);
+                // 55:
+                GetFeedsNetworkRequest getFeedsNetworkRequest = new GetFeedsNetworkRequest(feedURL);
+                List<GetFeedsNetworkRequest.FeedResponse> feedResponses = getFeedsNetworkRequest.performRequest();
 
-                // 54: New Rss items ArrayList to be used later
-                List<RssItem> newRSSItems = new ArrayList<RssItem>();
+                // 55:
+                if (getFeedsNetworkRequest.getErrorCode() != 0) {
+                    final String errorMessage;
+
+                    if (getFeedsNetworkRequest.getErrorCode() == NetworkRequest.ERROR_IO) {
+                        errorMessage = "Network error";
+                    } else if (getFeedsNetworkRequest.getErrorCode() == NetworkRequest.ERROR_MALFORMED_URL) {
+                        errorMessage = "Malformed URL error";
+                    } else if (getFeedsNetworkRequest.getErrorCode() == GetFeedsNetworkRequest.ERROR_PARSING) {
+                        errorMessage = "Error parsing feed"
+                    } else {
+                        errorMessage = "Error unknown";
+                    }
+
+                    // 55:
+                    callbackThreadHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onError(errorMessage);
+                        }
+                    });
+                    return;
+                }
+                // 55:
+                GetFeedsNetworkRequest.FeedResponse newFeedResponse = feedResponses.get(0);
+                long newFeedId = new RssFeedTable.Builder()
+                        .setFeedURL(newFeedResponse.channelFeedURL)
+                        .setSiteURL(newFeedResponse.channelURL)
+                        .setTitle(newFeedResponse.channelTitle)
+                        .setDescription(newFeedResponse.channelDescription)
+                        .insert(databaseOpenHelper.getWritableDatabase());
 
                 // The other table, "rss_items", will feature every item from every subscription
-                for (GetFeedsNetworkRequest.ItemResponse itemResponse: androidCentral.channelItems) {
+                for (GetFeedsNetworkRequest.ItemResponse itemResponse: newFeedResponse.channelItems) {
                     // Attempt to convert the downloaded String into Unix time
                     long itemPubDate = System.currentTimeMillis();
                     DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy kk:mm:ss z", Locale.ENGLISH);
@@ -150,6 +180,41 @@ public class DataSource {
         }).start();
     }
 
+    // 55: The method signature indicates which type of Callback is required to recover the new RSS feed.
+    // This Callback receives an RssFeed object, the one corresponding to the fetched feed.
+    public void fetchNewFeed (final String feedURL, final Callback<RssFeed> callback) {
+
+        // 55: A Handler, when instantiated, associates itself with the Thread on which it is created.
+        //      Handlers are capable of executing Runnables on their designated Thread
+        final android.os.Handler callbackThreadHandler = new Handler();
+
+        submitTask(new Runnable() {
+            @Override
+            public void run() {
+
+                // 55: Check whether a row exists for the given RSS feed URL.
+                //      If it exists, we recover that row and return it to the Callback.
+                Cursor existingFeedCursor = RssFeedTable.fetchFeedWithURL(databaseOpenHelper.getReadableDatabase(), feedURL);
+                if (existingFeedCursor.moveToFirst()) {
+                    final RssFeed fetchedFeed = feedFromCursor(existingFeedCursor);
+                    existingFeedCursor.close();
+
+                    // 55: Handler con't, invoke the Callback object's onSuccess(Result) method
+                    //      on the same Thread that made the request
+                    callbackThreadHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onSuccess(fetchedFeed);
+                        }
+                    });
+                    return;
+                }
+            }
+        });
+
+
+    }
+
     // 54: Pulls information from the Cursor and places it directly into RssFeed's constructor using
     //      newly created get methods in RssFeedTable.java
     // 55: Use new Table.getRowId() method to supply required row Id
@@ -167,5 +232,15 @@ public class DataSource {
                 RssItemTable.getEnclosure(cursor), RssItemTable.getRssFeedId(cursor),
                 RssItemTable.getPubDate(cursor), RssItemTable.getFavorite(cursor),
                 RssItemTable.getArchived(cursor));
+    }
+
+    // 55: A Runnable is a simple interface which has but one method, run()
+    void submitTask(Runnable task) {
+        // 55: If executorService is shutdown or terminated, instantiate a new ExecutorService
+        if (executorService.isShutdown() || executorService.isTerminated()) {
+            executorService = Executors.newSingleThreadExecutor();
+        }
+        // 55: Submitting a task places it on the queue, it will then be performed on a background thread.
+        executorService.submit(task);
     }
 }
