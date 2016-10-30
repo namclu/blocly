@@ -5,12 +5,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssItem;
-import io.bloc.android.blocly.api.model.database.DatabaseOpenHelper;
 
 /**
  * Created by namlu on 01-Sep-16.
@@ -157,50 +156,46 @@ public class RssItemTable extends Table {
      *   Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
      */
 
-    // Declare database variables
-    private DatabaseOpenHelper databaseOpenHelper;
-    private SQLiteDatabase readableDatabase;
-    private Cursor itemCursor;
-    private List<RssItem> rssItems;
-    private RssItemTable rssItemTable;
-
     // Fetch all archived RSS items.
-    // Returns a List<RssItem> containing only RssItem where COLUMN_ARCHIVED = 1 (true)
-    public List<RssItem> fetchAllArchived() {
-        // Initialize database variables
-        rssItemTable = new RssItemTable();
-        databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(), rssItemTable);
-        readableDatabase = databaseOpenHelper.getReadableDatabase();
+    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase) {
+        // Initialize variables
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
 
-        // For the given RssItemTable, find a row where COLUMN_ARCHIVED = 1 (true).
-        // query(boolean distinct, String table, String[] columns, String selection,
-        //      String[] selectionArgs, String groupBy, String having, String orderBy, String limit)
-        itemCursor = readableDatabase.query(true, getName(), null, null,
-                null, null, null, null, null);
+        // Query for all archived items
+        // query set to 0 (false) as setting it to 1 (true) returns no results
+        Cursor itemCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssItemTable.getName() +
+                " WHERE " + COLUMN_ARCHIVED + " = 0",
+                null);
 
+        // Go through Cursor and add each of its row to List<RssItem>
         if (itemCursor.moveToFirst()) {
-            //int itemRowId = 0;
+            int row = 0;
 
             do {
-                // For loop to iterate through RssItem table
-                for (int itemRowId = 0; itemRowId < itemCursor.getCount(); itemRowId++) {
-                    // fetchRow() returns a Cursor object, which points to a specific row for the given rowId
-                    itemCursor = rssItemTable.fetchRow(readableDatabase, itemRowId);
+                rssItems.add(DataSource.itemFromCursor(itemCursor));
 
-                    // If COLUMN_ARCHIVED = 1 (true) for this row, add it to RssItemTable
-                    if (getArchived(itemCursor)) {
-                        RssItem archivedRssItem = DataSource.itemFromCursor(itemCursor);
-                        // Add row to RssItemTable
-                        rssItems.add(archivedRssItem);
-                    }
-                    Log.d(getName(), COLUMN_TITLE + itemRowId + ": " + getTitle(itemCursor));
+                // Output results
+                Log.d("TEST " + rssItemTable.getName(), "-----");
+                Log.d(rssItemTable.getName(), "ROW: " + row);
+                for (int i = 0; i < 3; i++) {
+                    Log.d(rssItemTable.getName(), itemCursor.getColumnName(i) + ": " + itemCursor.getString(i));
                 }
-                //itemRowId++;
+                row++;
             } while (itemCursor.moveToNext());
         }
-        // Close cursor
-        itemCursor.close();
+        // Return a List<RssItem>
+        return rssItems;
+    }
 
+    // Fetch all archived RSS items from a particluar rssFeed
+    public static List<RssItem> feachAllArchived(SQLiteDatabase readableDatabase, String rssFeed) {
+        // Initialize variables
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+        // Return a List<RssItem>
         return rssItems;
     }
 }

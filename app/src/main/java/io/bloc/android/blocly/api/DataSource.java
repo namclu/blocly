@@ -145,11 +145,14 @@ public class DataSource {
 
                 // 54: To send a broadcast, use Context's sendBroadcast(Intent)
                 BloclyApplication.getSharedInstance().sendBroadcast(new Intent(ACTION_DOWNLOAD_COMPLETED));
+
+                /*
+                 * Assign 54: Use new RssItemTable methods
+                 */
+                RssItemTable.fetchAllArchived(writableDatabase);
+
             }
         }).start();
-
-        // Assign 54: Use new RssItemTable methods
-        rssItemTable.fetchAllArchived();
     }
 
     public List<RssFeed> getFeeds(){
