@@ -306,7 +306,6 @@ public class BloclyActivity extends AppCompatActivity
 
     @Override
     public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
-        // getFeeds() returns a List<RssFeed>
         // get() returns a RssFeed
         // 55: previous assumption was that feed was found at 0th index, but updating so that
         //      multiple feeds are supported

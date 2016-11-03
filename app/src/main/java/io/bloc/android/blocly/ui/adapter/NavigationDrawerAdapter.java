@@ -80,9 +80,9 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         viewHolder.update(position, rssFeed);
     }
 
+    // getItemCount() returns the number of items our Adapter provides
     @Override
     public int getItemCount() {
-        // Number of items our Adapter provides is returned by getItemCount()
         // NavigationOption.values().length = total number of navigation options
         // getDataSource().getFeeds(this).size() = with the number of RSS feeds found in DataSource
         // This gives us a total of four items to display.
