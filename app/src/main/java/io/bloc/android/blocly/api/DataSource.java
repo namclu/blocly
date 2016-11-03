@@ -65,7 +65,7 @@ public class DataSource {
         databaseOpenHelper = new DatabaseOpenHelper(BloclyApplication.getSharedInstance(),
                 rssFeedTable, rssItemTable);
 
-        // 55: Todo
+        // 55:
         if (BuildConfig.DEBUG && true) {
             BloclyApplication.getSharedInstance().deleteDatabase("blocly_db");
         }
@@ -115,7 +115,7 @@ public class DataSource {
                 GetFeedsNetworkRequest getFeedsNetworkRequest = new GetFeedsNetworkRequest(feedURL);
                 List<GetFeedsNetworkRequest.FeedResponse> feedResponses = getFeedsNetworkRequest.performRequest();
 
-                // 55:
+                // 55: Checks whether an error has occurred during fetchNewFeed request
                 if (getFeedsNetworkRequest.getErrorCode() != 0) {
                     final String errorMessage;
 
@@ -129,7 +129,7 @@ public class DataSource {
                         errorMessage = "Error unknown";
                     }
 
-                    // 55:
+                    // 55: After error checking, invoke Callback's onError()
                     callbackThreadHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -175,7 +175,8 @@ public class DataSource {
                             .setRSSFeed(newFeedId)
                             .insert(databaseOpenHelper.getWritableDatabase());
 
-                    // 55:
+                    // 55: Using callback pattern, we no longer need to broadcast updates to interested
+                    //      parties after task's completion
                     Cursor newFeedCursor = rssFeedTable.fetchRow(databaseOpenHelper.getReadableDatabase(), newFeedId);
                     newFeedCursor.moveToFirst();
                     final RssFeed fetchedFeed = feedFromCursor(newFeedCursor);
@@ -192,8 +193,9 @@ public class DataSource {
         });
     }
 
+    // 55: fetchItemsForFeed() uses RssItemTable.fetchItemsForFeed() to retrieve every time
+    //      associated with a feed
     // 55: Parameterized types can include nested types
-    // 55: This list will be populated from the results of the query
     public void fetchItemsForFeed(final RssFeed rssFeed, final Callback<List<RssItem>> callback){
         final Handler callbackThreadHandler = new Handler();
         submitTask(new Runnable() {
