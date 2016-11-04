@@ -4,6 +4,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.List;
+
+import io.bloc.android.blocly.api.model.RssFeed;
+
 /**
  * Created by namlu on 01-Sep-16.
  */
@@ -48,6 +52,12 @@ public class RssFeedTable extends Table {
      * Inquiries will be made by Table and returned as raw data, which will be made into model
      *      objects.
      */
+
+    // Assign 55 - getId to return the feed id
+    public static long getId(Cursor cursor) {
+        return getLong(cursor, COLUMN_ID);
+    }
+
     public static String getTitle(Cursor cursor) {
         return getString(cursor, COLUMN_TITLE);
     }
@@ -86,5 +96,30 @@ public class RssFeedTable extends Table {
                 + COLUMN_TITLE + " TEXT,"
                 + COLUMN_DESCRIPTION + " TEXT,"
                 + COLUMN_FEED_URL + " TEXT)";
+    }
+
+    /*
+     * Assign 54
+     */
+
+    // Returns the URL of the RssFeed object given the row ID
+    public static RssFeed fetchFeedUrl(SQLiteDatabase readableDatabase, int rowId) {
+
+        RssFeedTable rssFeedTable = new RssFeedTable();
+        RssFeed rssFeed;
+
+        Cursor feedCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssFeedTable.getName(), null);
+
+
+        if (feedCursor.moveToFirst()) {
+            do {
+                if (getId(feedCursor) == rowId) {
+                    rssFeed = new RssFeed();
+                }
+            } while (feedCursor.moveToNext());
+        }
+
+        return rssFeed;
     }
 }

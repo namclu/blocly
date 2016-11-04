@@ -188,27 +188,30 @@ public class RssItemTable extends Table {
         // Initialize variables
         List<RssItem> rssItems = new ArrayList<RssItem>();
         RssItemTable rssItemTable = new RssItemTable();
+        RssFeedTable rssFeedTable = new RssFeedTable();
 
-        // Query for the items
+        // Query for the items in rss_items
         Cursor itemCursor = readableDatabase.rawQuery(
                 "SELECT * FROM " + rssItemTable.getName() + " WHERE " +
                         COLUMN_ARCHIVED + " = 0 AND " +
-                        COLUMN_GUID + " IS NOT NULL",
+                        COLUMN_RSS_FEED + " > -1",
                 null);
 
         // If GUID URL are the same, add them to RssItemTable
         if (itemCursor.moveToFirst()) {
-            // Get feed URL from GUID
-            int columnIndex = itemCursor.getColumnIndex(COLUMN_GUID);
-            String stringFromGUID = itemCursor.getString(columnIndex);
-            String urlFromGUID = stringFromGUID.substring(stringFromGUID.indexOf("http"));
+            // Get rss_feed value
+            int columnIndex = itemCursor.getColumnIndex(COLUMN_RSS_FEED);
+            int rssFeedId = itemCursor.getInt(columnIndex);
+
+            // Get all feeds in rss_feeds
+            Cursor feedCursor = readableDatabase.rawQuery(
+                    "SELECT * FROM " + rssFeedTable.getName(), null);
+
+            if (feedCursor.moveToFirst()) {
+                int columnIndex = feedCursor.getColumnIndex(Co)
+            }
+            String rssFeedUrl = RssFeedTable.getFeedUrl();
             Log.v(rssItemTable.getName(), "urlFromGUID: " + urlFromGUID);
-            do {
-                // If feed URL matches the URL given, then add to RssItemTable
-                if (rssFeedString.equalsIgnoreCase(urlFromGUID)) {
-                    rssItems.add(DataSource.itemFromCursor(itemCursor));
-                }
-            } while (itemCursor.moveToNext());
         }
 
         // Check output

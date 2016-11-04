@@ -72,10 +72,8 @@ public class DataSource {
                 // getReadableDatabase() may also be used, however this method will not upgrade
                 // the database even if the versions are mismatched
                 SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
-                /*List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
-                        new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();*/
                 List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
-                        new GetFeedsNetworkRequest("http://www.abc.net.au/news/feed/45910/rss.xml").performRequest();
+                        new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();
 
                 // Why do we need to do: feedResponses.get(0)
                 GetFeedsNetworkRequest.FeedResponse androidCentral = feedResponses.get(0);
