@@ -9,7 +9,6 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
 
@@ -40,6 +39,7 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
     //      is de-referenced elsewhere, NavigationDrawerAdapter should not keep it
     // A WeakReference allows us to use an object as long as a strong reference to it exists somewhere
     // 55: Update data to use new NavigationDrawerAdapterDataSource
+    WeakReference<NavigationDrawerAdapterDelegate> delegate;
     WeakReference<NavigationDrawerAdapterDataSource> dataSource;
 
     // 55: Create getter/setter for new NavigationDrawerAdapterDataSource

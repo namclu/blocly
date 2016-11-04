@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -76,14 +77,14 @@ public class BloclyActivity extends AppCompatActivity
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_activity_blocly);
 
         // 55: When refresh is triggered by user, onRefresh() method is invoked
-        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.primary));
+        swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(BloclyActivity.this, R.color.primary));
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                // 55: Fetch a new feed and provide an in-line Callback interface to
+                //      receive the results
                 BloclyApplication.getSharedDataSource().fetchNewFeed(
                         "http://feeds.feedburner.com/androidcentral?format=xml",
-                        // 55: Fetch a new feed and provide an in-line Callback interface to
-                        //      receive the results
                         new DataSource.Callback<RssFeed>() {
 
                             @Override
