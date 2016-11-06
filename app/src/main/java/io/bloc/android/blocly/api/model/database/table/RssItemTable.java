@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.bloc.android.blocly.api.DataSource;
+import io.bloc.android.blocly.api.model.RssFeed;
 import io.bloc.android.blocly.api.model.RssItem;
 
 /**
@@ -184,34 +185,28 @@ public class RssItemTable extends Table {
     }
 
     // Fetch all archived RSS items from a particular rssFeed
-    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, String rssFeedString) {
-        // Initialize variables
+    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, RssFeed rssFeed) {
         List<RssItem> rssItems = new ArrayList<RssItem>();
         RssItemTable rssItemTable = new RssItemTable();
-        RssFeedTable rssFeedTable = new RssFeedTable();
 
-        // Query for the items in rss_items
+
+        // Select from database all RSS items that are archived
         Cursor itemCursor = readableDatabase.rawQuery(
                 "SELECT * FROM " + rssItemTable.getName() + " WHERE " +
-                        COLUMN_ARCHIVED + " = 0 AND " +
-                        COLUMN_RSS_FEED + " > -1",
+                        COLUMN_ARCHIVED + " = 0",
                 null);
 
-        // If GUID URL are the same, add them to RssItemTable
+        // Get the RSS feed ID from the given RSS feed
+        long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
+        Log.v(rssItemTable.getName(), "rssFeedId = " + rssFeedId);
+
+        // Use that RSS feed ID to get all the Rss items with the same feed ID
         if (itemCursor.moveToFirst()) {
-            // Get rss_feed value
-            int columnIndex = itemCursor.getColumnIndex(COLUMN_RSS_FEED);
-            int rssFeedId = itemCursor.getInt(columnIndex);
-
-            // Get all feeds in rss_feeds
-            Cursor feedCursor = readableDatabase.rawQuery(
-                    "SELECT * FROM " + rssFeedTable.getName(), null);
-
-            if (feedCursor.moveToFirst()) {
-                int columnIndex = feedCursor.getColumnIndex(Co)
-            }
-            String rssFeedUrl = RssFeedTable.getFeedUrl();
-            Log.v(rssItemTable.getName(), "urlFromGUID: " + urlFromGUID);
+            do {
+                if (getRssFeedId(itemCursor) == rssFeedId) {
+                    rssItems.add(DataSource.itemFromCursor(itemCursor));
+                }
+            } while (itemCursor.moveToNext());
         }
 
         // Check output

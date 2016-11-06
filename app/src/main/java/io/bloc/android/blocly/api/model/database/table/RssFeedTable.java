@@ -4,8 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.util.List;
-
+import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssFeed;
 
 /**
@@ -53,7 +52,7 @@ public class RssFeedTable extends Table {
      *      objects.
      */
 
-    // Assign 55 - getId to return the feed id
+    // Assign 54 - getId to return the feed id
     public static long getId(Cursor cursor) {
         return getLong(cursor, COLUMN_ID);
     }
@@ -102,24 +101,22 @@ public class RssFeedTable extends Table {
      * Assign 54
      */
 
-    // Returns the URL of the RssFeed object given the row ID
-    public static RssFeed fetchFeedUrl(SQLiteDatabase readableDatabase, int rowId) {
-
+    // Returns the RSS feed ID of the given RssFeed
+    public static long fetchRssFeedId(SQLiteDatabase readableDatabase, RssFeed rssFeed) {
         RssFeedTable rssFeedTable = new RssFeedTable();
-        RssFeed rssFeed;
+        long rssFeedId = -1;
 
         Cursor feedCursor = readableDatabase.rawQuery(
-                "SELECT * FROM " + rssFeedTable.getName(), null);
-
+                "SELECT * FROM " + rssFeedTable.getName(),
+                null);
 
         if (feedCursor.moveToFirst()) {
             do {
-                if (getId(feedCursor) == rowId) {
-                    rssFeed = new RssFeed();
+                if (DataSource.feedFromCursor(feedCursor).equals(rssFeed)) {
+                    rssFeedId = getId(feedCursor);
                 }
             } while (feedCursor.moveToNext());
         }
-
-        return rssFeed;
+        return rssFeedId;
     }
 }

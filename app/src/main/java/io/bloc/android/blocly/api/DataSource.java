@@ -72,8 +72,10 @@ public class DataSource {
                 // getReadableDatabase() may also be used, however this method will not upgrade
                 // the database even if the versions are mismatched
                 SQLiteDatabase writableDatabase = databaseOpenHelper.getWritableDatabase();
+                /*List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
+                        new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();*/
                 List<GetFeedsNetworkRequest.FeedResponse> feedResponses =
-                        new GetFeedsNetworkRequest("http://feeds.feedburner.com/androidcentral?format=xml").performRequest();
+                        new GetFeedsNetworkRequest("http://www.abc.net.au/news/feed/52498/rss.xml").performRequest();
 
                 // Why do we need to do: feedResponses.get(0)
                 GetFeedsNetworkRequest.FeedResponse androidCentral = feedResponses.get(0);
@@ -148,15 +150,14 @@ public class DataSource {
                 BloclyApplication.getSharedInstance().sendBroadcast(new Intent(ACTION_DOWNLOAD_COMPLETED));
 
                 /*
-                 * Assign 54: Use new RssItemTable methods
+                 * Assign 54: Testing new RssItemTable methods
                  */
 
                 // Fetch all archived RSS items.
-                RssItemTable.fetchAllArchived(writableDatabase);
+                //RssItemTable.fetchAllArchived(writableDatabase);
 
                 // Todo: Fetch all archived RSS items from a particular RSS feed.
-                //RssItemTable.fetchAllArchived(writableDatabase, "http://feeds.feedburner.com/androidcentral?format=xml");
-                RssItemTable.fetchAllArchived(writableDatabase, "http://www.abc.net.au/news/feed/45910/rss.xml");
+                RssItemTable.fetchAllArchived(writableDatabase, androidCentralRSSFeed);
 
                 // Todo: Fetch all favorited RSS items.
                 // Todo: Fetch all favorited RSS items from a particular RSS feed.
