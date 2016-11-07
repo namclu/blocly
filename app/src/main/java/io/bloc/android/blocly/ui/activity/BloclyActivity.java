@@ -104,12 +104,12 @@ public class BloclyActivity extends AppCompatActivity
                                                 if (isFinishing() || isDestroyed()) {
                                                     return;
                                                 }
-                                                currentItems.addAll(rssItems);
+                                                currentItems.addAll(0, rssItems);
                                                 // 55: notifyItemRangeInserted() uses ItemAnimator to add
                                                 //      each RSS item to RecyclerView individually, producing
                                                 //      a pleasing animation that eases items into place
                                                 //      rather than forcing them to appear instantaneously
-                                                itemAdapter.notifyItemRangeInserted(0, currentItems.size());
+                                                itemAdapter.notifyItemRangeInserted(0, rssItems.size());
                                                 // 55: programmatically disable the refreshing animation
                                                 swipeRefreshLayout.setRefreshing(false);
                                             }
