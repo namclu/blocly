@@ -158,7 +158,7 @@ public class RssItemTable extends Table {
      */
 
     // Fetch all archived RSS items.
-    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase) {
+    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, boolean isArchived) {
         // Initialize variables
         List<RssItem> rssItems = new ArrayList<RssItem>();
         RssItemTable rssItemTable = new RssItemTable();
@@ -167,7 +167,7 @@ public class RssItemTable extends Table {
         // query set to 0 (false) as setting it to 1 (true) returns no results
         Cursor itemCursor = readableDatabase.rawQuery(
                 "SELECT * FROM " + rssItemTable.getName() +
-                        " WHERE " + COLUMN_ARCHIVED + " = 0", null);
+                        " WHERE " + COLUMN_ARCHIVED + " = " + (isArchived ? 1 : 0), null);
 
         if (itemCursor.moveToFirst()) {
             // While there are still items in Cursor, add them to RssItemTable
@@ -177,22 +177,21 @@ public class RssItemTable extends Table {
         }
 
         // Check output
-        // RssItemTable.outputFetch(itemCursor, rssItems);
+        RssItemTable.outputFetch(itemCursor, rssItems);
 
         itemCursor.close();
         return rssItems;
     }
 
     // Fetch all archived RSS items from a particular rssFeed
-    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, RssFeed rssFeed) {
+    public static List<RssItem> fetchAllArchived(SQLiteDatabase readableDatabase, boolean isArchived, RssFeed rssFeed) {
         List<RssItem> rssItems = new ArrayList<RssItem>();
         RssItemTable rssItemTable = new RssItemTable();
-
 
         // Select from database all RSS items that are archived
         Cursor itemCursor = readableDatabase.rawQuery(
                 "SELECT * FROM " + rssItemTable.getName() +
-                        " WHERE " + COLUMN_ARCHIVED + " = 0", null);
+                        " WHERE " + COLUMN_ARCHIVED + " = " + (isArchived ? 1 : 0), null);
 
         // Get the RSS feed ID from the given RSS feed
         long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
@@ -214,6 +213,28 @@ public class RssItemTable extends Table {
         return rssItems;
     }
 
+    // Fetch all favorited RSS items.
+    public static List<RssItem> fetchAllFavorited(SQLiteDatabase readableDatabase, boolean isFavorited) {
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+        Cursor itemCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssItemTable.getName() +
+                        " WHERE " + COLUMN_FAVORITE + " = " + (isFavorited ? 1 : 0), null);
+
+        if (itemCursor.moveToFirst()) {
+            do {
+                rssItems.add(DataSource.itemFromCursor(itemCursor));
+            } while (itemCursor.moveToNext());
+        }
+
+        // Check output
+        RssItemTable.outputFetch(itemCursor, rssItems);
+
+        itemCursor.close();
+        return rssItems;
+    }
+    
     // outputFetch() outputs the results of the fetch queries
     public static void outputFetch(Cursor itemCursor, List<RssItem> rssItems) {
 
