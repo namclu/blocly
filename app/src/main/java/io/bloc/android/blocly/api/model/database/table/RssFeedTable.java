@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import io.bloc.android.blocly.api.DataSource;
 import io.bloc.android.blocly.api.model.RssFeed;
 
 /**
@@ -106,16 +105,13 @@ public class RssFeedTable extends Table {
         RssFeedTable rssFeedTable = new RssFeedTable();
         long rssFeedId = -1;
 
+        // 54: public Cursor rawQuery(String sql, String[] selectionArgs)
         Cursor feedCursor = readableDatabase.rawQuery(
-                "SELECT * FROM " + rssFeedTable.getName(),
-                null);
+                "SELECT * FROM " + rssFeedTable.getName() +
+                " WHERE " + COLUMN_FEED_URL + " = ?", new String[] {rssFeed.getFeedUrl()});
 
         if (feedCursor.moveToFirst()) {
-            do {
-                if (DataSource.feedFromCursor(feedCursor).equals(rssFeed)) {
-                    rssFeedId = getId(feedCursor);
-                }
-            } while (feedCursor.moveToNext());
+            rssFeedId = getId(feedCursor);
         }
         return rssFeedId;
     }

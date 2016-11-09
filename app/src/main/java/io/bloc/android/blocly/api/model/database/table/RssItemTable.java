@@ -166,9 +166,8 @@ public class RssItemTable extends Table {
         // Query for all archived items
         // query set to 0 (false) as setting it to 1 (true) returns no results
         Cursor itemCursor = readableDatabase.rawQuery(
-                "SELECT * FROM " + rssItemTable.getName() + " WHERE " +
-                        COLUMN_ARCHIVED + " = 0",
-                null);
+                "SELECT * FROM " + rssItemTable.getName() +
+                        " WHERE " + COLUMN_ARCHIVED + " = 0", null);
 
         if (itemCursor.moveToFirst()) {
             // While there are still items in Cursor, add them to RssItemTable
@@ -192,9 +191,8 @@ public class RssItemTable extends Table {
 
         // Select from database all RSS items that are archived
         Cursor itemCursor = readableDatabase.rawQuery(
-                "SELECT * FROM " + rssItemTable.getName() + " WHERE " +
-                        COLUMN_ARCHIVED + " = 0",
-                null);
+                "SELECT * FROM " + rssItemTable.getName() +
+                        " WHERE " + COLUMN_ARCHIVED + " = 0", null);
 
         // Get the RSS feed ID from the given RSS feed
         long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
@@ -216,7 +214,7 @@ public class RssItemTable extends Table {
         return rssItems;
     }
 
-     // outputFetch() outputs the results of the fetch queries
+    // outputFetch() outputs the results of the fetch queries
     public static void outputFetch(Cursor itemCursor, List<RssItem> rssItems) {
 
         RssItemTable rssItemTable = new RssItemTable();
