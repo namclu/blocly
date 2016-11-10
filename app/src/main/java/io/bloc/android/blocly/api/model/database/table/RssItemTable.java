@@ -195,7 +195,6 @@ public class RssItemTable extends Table {
 
         // Get the RSS feed ID from the given RSS feed
         long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
-        Log.v(rssItemTable.getName(), "rssFeedId = " + rssFeedId);
 
         // Use that RSS feed ID to get all the Rss items with the same feed ID
         if (itemCursor.moveToFirst()) {
@@ -234,7 +233,33 @@ public class RssItemTable extends Table {
         itemCursor.close();
         return rssItems;
     }
-    
+
+    // Fetch all favorited RSS items from a particular RSS feed.
+    public static List<RssItem> fetchAllFavorited(SQLiteDatabase readableDatabase, boolean isFavorited, RssFeed rssFeed) {
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+        Cursor itemCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssItemTable.getName() +
+                        " WHERE " + COLUMN_FAVORITE + " = " + (isFavorited ? 1 : 0), null);
+
+        long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
+
+        if (itemCursor.moveToFirst()) {
+            do {
+                if (getRssFeedId(itemCursor) == rssFeedId) {
+                    rssItems.add(DataSource.itemFromCursor(itemCursor));
+                }
+            } while (itemCursor.moveToNext());
+        }
+
+        // Check output
+        RssItemTable.outputFetch(itemCursor, rssItems);
+
+        itemCursor.close();
+        return rssItems;
+    }
+
     // outputFetch() outputs the results of the fetch queries
     public static void outputFetch(Cursor itemCursor, List<RssItem> rssItems) {
 

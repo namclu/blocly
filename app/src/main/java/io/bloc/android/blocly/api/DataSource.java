@@ -159,10 +159,12 @@ public class DataSource {
                 // Fetch all archived RSS items from a particular RSS feed.
                 //RssItemTable.fetchAllArchived(writableDatabase, false, androidCentralRSSFeed);
 
-                // Todo: Fetch all favorited RSS items.
-                RssItemTable.fetchAllFavorited(writableDatabase, false);
+                // Fetch all favorited RSS items.
+                //RssItemTable.fetchAllFavorited(writableDatabase, false);
 
                 // Todo: Fetch all favorited RSS items from a particular RSS feed.
+                RssItemTable.fetchAllFavorited(writableDatabase, false, androidCentralRSSFeed);
+
                 // Todo: Fetch all items from a particular RSS feed.
                 // Todo: Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
 
