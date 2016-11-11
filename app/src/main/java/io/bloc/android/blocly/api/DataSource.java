@@ -162,11 +162,14 @@ public class DataSource {
                 // Fetch all favorited RSS items.
                 //RssItemTable.fetchAllFavorited(writableDatabase, false);
 
-                // Todo: Fetch all favorited RSS items from a particular RSS feed.
-                RssItemTable.fetchAllFavorited(writableDatabase, false, androidCentralRSSFeed);
+                // Fetch all favorited RSS items from a particular RSS feed.
+                //RssItemTable.fetchAllFavorited(writableDatabase, false, androidCentralRSSFeed);
 
-                // Todo: Fetch all items from a particular RSS feed.
-                // Todo: Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
+                // Fetch all items from a particular RSS feed.
+                //RssItemTable.fetchAllItemsFromFeed(writableDatabase, androidCentralRSSFeed);
+
+                // Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
+                RssItemTable.fetchAllItemsFromFeed(writableDatabase, androidCentralRSSFeed, 5, 10);
 
 
             }

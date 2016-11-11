@@ -260,6 +260,57 @@ public class RssItemTable extends Table {
         return rssItems;
     }
 
+    // Fetch all items from a particular RSS feed.
+    public static List<RssItem> fetchAllItemsFromFeed(SQLiteDatabase readableDatabase, RssFeed rssFeed) {
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+        long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
+
+        Cursor itemCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssItemTable.getName() +
+                " WHERE " + COLUMN_RSS_FEED + " = ?", new String[] {Long.toString(rssFeedId)});
+
+        if (itemCursor.moveToFirst()) {
+            do {
+                rssItems.add(DataSource.itemFromCursor(itemCursor));
+            } while (itemCursor.moveToNext());
+        }
+
+        // Check output
+        RssItemTable.outputFetch(itemCursor, rssItems);
+
+        itemCursor.close();
+        return rssItems;
+    }
+
+    // Fetch all items from a particular RSS feed with a given OFFSET and LIMIT.
+    public static List<RssItem> fetchAllItemsFromFeed(SQLiteDatabase readableDatabase, RssFeed rssFeed, int offset, int limit) {
+        List<RssItem> rssItems = new ArrayList<RssItem>();
+        RssItemTable rssItemTable = new RssItemTable();
+
+        long rssFeedId = RssFeedTable.fetchRssFeedId(readableDatabase, rssFeed);
+
+        Cursor itemCursor = readableDatabase.query(
+                rssItemTable.getName(),
+                null,
+                RssItemTable.COLUMN_RSS_FEED + " = ?",
+                new String[] {Long.toString(rssFeedId)},
+                null, null, null, Integer.toString(offset) + "," + Integer.toString(limit));
+
+        /*Cursor itemCursor = readableDatabase.rawQuery(
+                "SELECT * FROM " + rssItemTable.getName() +
+                        " WHERE " + COLUMN_RSS_FEED + " = " + Long.toString(rssFeedId) +
+                        " AND OFFSET = " + offset +
+                        " AND LIMIT = " + limit, null);*/
+
+        // Check output
+        RssItemTable.outputFetch(itemCursor, rssItems);
+
+        itemCursor.close();
+        return rssItems;
+    }
+
     // outputFetch() outputs the results of the fetch queries
     public static void outputFetch(Cursor itemCursor, List<RssItem> rssItems) {
 
