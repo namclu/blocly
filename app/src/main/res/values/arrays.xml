@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="roboto_font_file_names">
+        <item>Roboto-Black.ttf</item>
+        <item>Roboto-BlackItalic.ttf</item>
+        <item>Roboto-Bold.ttf</item>
+        <item>Roboto-BoldItalic.ttf</item>
+        <item>Roboto-Italic.ttf</item>
+        <item>Roboto-Light.ttf</item>
+        <item>Roboto-LightItalic.ttf</item>
+        <item>Roboto-Medium.ttf</item>
+        <item>Roboto-MediumItalic.ttf</item>
+        <item>Roboto-Regular.ttf</item>
+        <item>Roboto-Thin.ttf</item>
+        <item>Roboto-ThinItalic.ttf</item>
+        <item>RobotoCondensed-Bold.ttf</item>
+        <item>RobotoCondensed-BoldItalic.ttf</item>
+        <item>RobotoCondensed-Italic.ttf</item>
+        <item>RobotoCondensed-Light.ttf</item>
+        <item>RobotoCondensed-LightItalic.ttf</item>
+        <item>RobotoCondensed-Regular.ttf</item>
+    </string-array>
+</resources>

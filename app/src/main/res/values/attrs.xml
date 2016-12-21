@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Roboto">
+        <attr name="robotoFont" format="enum">
+            <enum name="Black" value="0"/>
+            <enum name="BlackItalic" value="1"/>
+            <enum name="Bold" value="2"/>
+            <enum name="BoldItalic" value="3"/>
+            <enum name="Italic" value="4"/>
+            <enum name="Light" value="5"/>
+            <enum name="LightItalic" value="6"/>
+            <enum name="Medium" value="7"/>
+            <enum name="MediumItalic" value="8"/>
+            <enum name="Regular" value="9"/>
+            <enum name="Thin" value="10"/>
+            <enum name="ThinItalic" value="11"/>
+            <enum name="CondensedBold" value="12"/>
+            <enum name="CondensedBoldItalic" value="13"/>
+            <enum name="CondensedItalic" value="14"/>
+            <enum name="CondensedLight" value="15"/>
+            <enum name="CondensedLightItalic" value="16"/>
+            <enum name="CondensedRegular" value="17"/>
+        </attr>
+    </declare-styleable>
+</resources>
