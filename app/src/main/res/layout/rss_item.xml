@@ -38,6 +38,7 @@
         android:id="@+id/cb_rss_item_check_mark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:button="@drawable/btn_check_checkbox"
         android:layout_marginBottom="16dp"
         android:layout_alignParentRight="true"
         android:layout_below="@id/tv_rss_item_title"/>
@@ -46,6 +47,7 @@
         android:id="@+id/cb_rss_item_favorite_star"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:button="@drawable/btn_star_checkbox"
         android:layout_marginBottom="16dp"
         android:layout_alignParentRight="true"
         android:layout_below="@id/cb_rss_item_check_mark"/>

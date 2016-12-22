@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,13 +55,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
     // Inner class responsible for representing a single View created and returned by an Adapter
     class ItemAdapterViewHolder extends RecyclerView.ViewHolder implements ImageLoadingListener,
-            View.OnClickListener{
+            View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
         TextView title;
         TextView feed;
         TextView content;
         View headerWrapper;
         ImageView headerImage;
+
+        // 39: References to new Checkbox objects
+        CheckBox archiveCheckbox;
+        CheckBox favoriteCheckbox;
+
         // Reference to RssItem to act on the data associated with each ItemAdapterViewHolder
         RssItem rssItem;
 
@@ -72,10 +79,19 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             // Assign the inflated FrameLayout View to a basic View field
             headerWrapper = itemView.findViewById(R.id.fl_rss_item_image_header);
             headerImage = (ImageView) itemView.findViewById(R.id.iv_rss_item_image);
+
+            // 39:
+            archiveCheckbox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_check_mark);
+            favoriteCheckbox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_favorite_star);
+
             // A single itemView maps to a single ViewHolder, and this pair of objects is reused
             // and recycled to accommodate larger sets of data
             // setOnClickListener(onClickListener 1)
             itemView.setOnClickListener(this);
+
+            // 39.3: Listeners for checkboxes are setOnCheckChangeListener()
+            archiveCheckbox.setOnCheckedChangeListener(this);
+            favoriteCheckbox.setOnCheckedChangeListener(this);
         }
 
         void update(RssFeed rssFeed, RssItem rssItem){
@@ -136,6 +152,18 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
             // makeText(Context context, CharSequence text, int duration).show();
             Toast.makeText(view.getContext(), rssItem.getTitle(), Toast.LENGTH_SHORT).show();
+        }
+
+        /*
+         * onCheckedChangeListener
+         *
+         * 39.4: Since class ItemAdapterViewHolder implements CompoundButton.OnCheckedChangeListener,
+         *      need to include its abstract method onCheckChanged()
+         */
+
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            Log.v(TAG, "Checked changed to " + isChecked);
         }
     }
 
