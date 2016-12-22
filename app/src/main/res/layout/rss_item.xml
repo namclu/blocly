@@ -34,6 +34,22 @@
         android:layout_below="@id/fl_rss_item_image_header"
         android:text="New York Attacked by Giant Squid"/>
     
+    <CheckBox
+        android:id="@+id/cb_rss_item_check_mark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/tv_rss_item_title"/>
+
+    <CheckBox
+        android:id="@+id/cb_rss_item_favorite_star"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/cb_rss_item_check_mark"/>
+    
     <io.bloc.android.blocly.ui.widget.RobotoTextView
         style="@style/Caption"
         android:id="@+id/tv_rss_item_feed_title"
@@ -41,6 +57,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tv_rss_item_title"
         android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_toLeftOf="@+id/cb_rss_item_check_mark"
         android:text="New York Times"/>
     
     <io.bloc.android.blocly.ui.widget.RobotoTextView
@@ -50,6 +68,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_rss_item_feed_title"
         android:text="A giant squid appeared abruptly today in lower Manhattan. The squid appeared peaceful at first but violence quickly escalated after a tourist attempted to have their photo taken with the \'big city octopus\'."
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_toLeftOf="@+id/cb_rss_item_check_mark"/>
 
 </RelativeLayout>
