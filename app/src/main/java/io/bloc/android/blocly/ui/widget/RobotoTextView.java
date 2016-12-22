@@ -17,7 +17,7 @@ import io.bloc.android.blocly.R;
 
 public class RobotoTextView extends TextView{
 
-    private static Map<String, Typeface> sTypefaces = new HashMap<>();
+    private static Map<String, Typeface> sTypefaces = new HashMap<String, Typeface>();
 
     public RobotoTextView(Context context) {
         super(context);
