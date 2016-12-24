@@ -104,6 +104,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             } else{
                 headerWrapper.setVisibility(View.GONE);
             }
+
+            // 39.A: Update the checked states of buttons
+            archiveCheckBox.setChecked(rssItem.isArchived());
+            favoriteCheckBox.setChecked(rssItem.isFavorite());
         }
 
          /*
@@ -152,7 +156,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
-            Log.v(TAG, "Checked changed to: " + isChecked);
+            if (archiveCheckBox.isPressed()) {
+                rssItem.setArchived(isChecked);
+            } else if (favoriteCheckBox.isPressed()) {
+                rssItem.setFavorite(isChecked);
+            }
         }
     }
 
