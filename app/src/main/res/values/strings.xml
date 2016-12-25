@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Blocly</string>
+    <string name="placeholder_headline">New York Times</string>
+    <string name="placeholder_content">A giant squid appeared abruptly today in lower Manhattan. The squid appeared peaceful at first but violence quickly escalated after a tourist attempted to have their photo taken with the \'big city octopus\'.</string>
 </resources>
