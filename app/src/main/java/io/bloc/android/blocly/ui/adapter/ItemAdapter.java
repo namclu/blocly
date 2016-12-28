@@ -68,6 +68,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         CheckBox archiveCheckBox;
         CheckBox favoriteCheckBox;
 
+        // 40.8: References to hidden and expanded content views
+        boolean contentExpanded;
+        View expandedContentWrapper;
+        TextView expandedContent;
+        TextView visitSite;
+
         public ItemAdapterViewHolder(View itemView){
             //itemView is a reference to inflated version of rss_item.xml
             super(itemView);
@@ -80,12 +86,22 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             // References to Checkbox views
             archiveCheckBox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_check_mark);
             favoriteCheckBox = (CheckBox) itemView.findViewById(R.id.cb_rss_item_favorite_star);
+
+            // 40.8: Show where to find the inflated views and content
+            expandedContentWrapper = itemView.findViewById(R.id.ll_rss_item_expanded_content_wrapper);
+            expandedContent = (TextView) expandedContentWrapper.findViewById(R.id.tv_rss_item_content_full);
+            visitSite = (TextView) expandedContentWrapper.findViewById(R.id.tv_rss_item_visit_site);
+
             // A single itemView maps to a single ViewHolder, and this pair of objects is reused
             // and recycled to accommodate larger sets of data
             // setOnClickListener(onClickListener l);
             itemView.setOnClickListener(this);
             // Set ItemAdapterViewHolder as the OnCheckedChangeListener for both check boxes
             // setOnCheckedChangeListener(onCheckChangeListener listener);
+
+            // 40.8: Set onClickListener for the Visit Site button
+            visitSite.setOnClickListener(this);
+
             archiveCheckBox.setOnCheckedChangeListener(this);
             favoriteCheckBox.setOnCheckedChangeListener(this);
         }
@@ -95,6 +111,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             feed.setText(rssFeed.getTitle());
             title.setText(rssItem.getTitle());
             content.setText(rssItem.getDescription());
+
+            // 40.8: Both content and expandedContent display the same item
+            expandedContent.setText(rssItem.getDescription());
+
             if(rssItem.getImageUrl() != null){
                 headerWrapper.setVisibility(View.VISIBLE);
                 headerImage.setVisibility(View.INVISIBLE);
@@ -146,8 +166,15 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         // Abstract and only method of View.OnClickListener
         public void onClick(View view) {
-            // makeText(Context context, CharSequence text, int duration).show();
-            Toast.makeText(view.getContext(), rssItem.getTitle(), Toast.LENGTH_SHORT).show();
+            // 40.8: Set the onClick behaviour to expand/contract content
+            //      If contentExpanded is true, expandedContentWrapper = visible, content = gone
+            if (view == itemView) {
+                contentExpanded = !contentExpanded;
+                expandedContentWrapper.setVisibility(contentExpanded ? View.VISIBLE : View.GONE);
+                content.setVisibility(contentExpanded ? View.GONE : View.VISIBLE);
+            } else {
+                Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+            }
         }
 
         @Override
