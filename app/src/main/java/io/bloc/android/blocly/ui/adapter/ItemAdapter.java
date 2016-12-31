@@ -1,5 +1,6 @@
 package io.bloc.android.blocly.ui.adapter;
 
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -183,6 +184,78 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
             Log.v(TAG, "Checked changed to: " + isChecked);
+        }
+
+        /*
+         * Private methods
+         */
+
+        private void animateContent(final boolean expand) {
+            // 41.1: If contentExpanded is already expanded, and a request is made to expand it,
+            //      then nothing needs to be done. The reverse is also true
+            if ((expand && contentExpanded) || (!expand && !contentExpanded)) {
+                return;
+            }
+
+            // 41.2: When animating the content window, we need the initial and final height variables
+            int startingHeight = expandedContentWrapper.getMeasuredHeight();
+            int finalHeight = content.getMeasuredHeight();
+
+            if (expand) {
+                // 41.3: Set startingHeight to height of preview content. Full length of content is
+                //      visible but transparent, animating from full tranparency to full opacity.
+                startingHeight = finalHeight;
+                expandedContentWrapper.setAlpha(0f);
+                expandedContentWrapper.setVisibility(View.VISIBLE);
+
+                // 41.4: Determine the height of expansion using measure(int, int), which asks the
+                //      View to measure itself given the constraints provided. Constraint width to
+                //   ,    width of content, height is unlimited.
+                expandedContentWrapper.measure(
+                        View.MeasureSpec.makeMeasureSpec(content.getWidth(), View.MeasureSpec.EXACTLY),
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                finalHeight = expandedContentWrapper.getMeasuredHeight();
+            } else {
+                content.setVisibility(View.VISIBLE);
+            }
+
+            // 41:
+            startAnimator(startingHeight, finalHeight, new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    // 41.5: Recover animation's progress as a float value, where value is between
+                    //      0 and 1.0. Example 5 sec into 10 sec animation, progress would read 0.5
+                    float animatedFraction = valueAnimator.getAnimatedFraction();
+                    float wrapperAlpha = expand ? animatedFraction : 1f - animatedFraction;
+                    float contentAlpha = 1f - wrapperAlpha;
+
+                    // 41.5: Use % completion to set opacity level for content and expandedContentWrapper
+                    //      where content opacity changes inverse to wrapper opacity, creating a
+                    //      cross-fade effect
+                    expandedContentWrapper.setAlpha(wrapperAlpha);
+                    content.setAlpha(contentAlpha);
+
+                    // 41.6: Set the height of expandedContentWrapper, when animationFraction is
+                    //      completed, it is equal to size of WRAP_CONTENT, else get height as
+                    //      a changing animated value.
+                    expandedContentWrapper.getLayoutParams().height = animatedFraction == 1f ?
+                            ViewGroup.LayoutParams.WRAP_CONTENT :
+                            (Integer) valueAnimator.getAnimatedValue();
+
+                    //41.7: requestLayout() is called by a view on itself to update when it may
+                    //      no longer fit within its current bounds.
+                    expandedContentWrapper.requestLayout();
+                    if (animatedFraction == 1f) {
+                        if (expand) {
+                            content.setVisibility(View.GONE);
+                        } else {
+                            expandedContentWrapper.setVisibility(View.GONE);
+                        }
+                    }
+                }
+            });
+            contentExpanded = expand;
         }
     }
 
