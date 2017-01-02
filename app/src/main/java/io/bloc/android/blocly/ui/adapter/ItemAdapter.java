@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -220,7 +221,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 content.setVisibility(View.VISIBLE);
             }
 
-            // 41:
+            // 41.5:
             startAnimator(startingHeight, finalHeight, new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -256,6 +257,21 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 }
             });
             contentExpanded = expand;
+        }
+
+        // 41.8: ValueAnimator animates using two values, counting from one to the other
+        //      over a period of time
+        private void startAnimator(int start, int end, ValueAnimator.AnimatorUpdateListener animatorUpdateListener) {
+            ValueAnimator valueAnimator = ValueAnimator.ofInt(start, end);
+            valueAnimator.addUpdateListener(animatorUpdateListener);
+
+            // 41.8: Set the duration of animation using Android's config_mediumAnimTime
+            valueAnimator.setDuration(itemView.getResources().getInteger(android.R.integer.config_mediumAnimTime));
+
+            // 41.9: Set interpolator to AccelerateDecelerateInterpolator(), which accelerates
+            //      animation to a constant speed, then decelerates to stop at the end
+            valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+            valueAnimator.start();
         }
     }
 
