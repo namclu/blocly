@@ -172,9 +172,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                contentExpanded = !contentExpanded;
-                expandedContentWrapper.setVisibility(contentExpanded ? View.VISIBLE : View.GONE);
-                content.setVisibility(contentExpanded ? View.GONE : View.VISIBLE);
+                animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
