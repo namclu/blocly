@@ -60,7 +60,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
         // Boolean to track expansion state
-        boolean contentExpanded;
+        boolean contentExpanded = false;
+        boolean imageExpanded = true;
+
         TextView title;
         TextView feed;
         TextView content;
@@ -172,7 +174,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         public void onClick(View view) {
 
             if(view == itemView){
-                animateContent(!contentExpanded);
+                //animateContent(!contentExpanded, expandedContentWrapper);
+                //animateContent(!imageExpanded, headerImage, headerWrapper);
+                //animateContent(!contentExpanded, content, expandedContentWrapper);
+                animateContent(!contentExpanded, contentExpanded, content, expandedContentWrapper);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
@@ -189,34 +194,34 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
          * Private methods
          */
 
-        private void animateContent(final boolean expand) {
+        private void animateContent(final boolean expand, boolean itemExpanded, final View item, final View itemWrapper) {
             // 41.1: If contentExpanded is already expanded, and a request is made to expand it,
             //      then nothing needs to be done. The reverse is also true
-            if ((expand && contentExpanded) || (!expand && !contentExpanded)) {
+            if ((expand && itemExpanded) || (!expand && !itemExpanded)) {
                 return;
             }
 
-            // 41.2: When animating the content window, we need the initial and final height variables
-            int startingHeight = expandedContentWrapper.getMeasuredHeight();
-            int finalHeight = content.getMeasuredHeight();
+            // 41.2: When animating the item window, we need the initial and final height variables
+            int startingHeight = itemWrapper.getMeasuredHeight();
+            int finalHeight = item.getMeasuredHeight();
 
             if (expand) {
-                // 41.3: Set startingHeight to height of preview content. Full length of content is
+                // 41.3: Set startingHeight to height of preview item. Full length of item is
                 //      visible but transparent, animating from full transparency to full opacity.
                 startingHeight = finalHeight;
-                expandedContentWrapper.setAlpha(0f);
-                expandedContentWrapper.setVisibility(View.VISIBLE);
+                itemWrapper.setAlpha(0f);
+                itemWrapper.setVisibility(View.VISIBLE);
 
                 // 41.4: Determine the height of expansion using measure(int, int), which asks the
                 //      View to measure itself given the constraints provided. Constraint width to
-                //      width of content, height is unlimited.
-                expandedContentWrapper.measure(
-                        View.MeasureSpec.makeMeasureSpec(content.getWidth(), View.MeasureSpec.EXACTLY),
+                //      width of item, height is unlimited.
+                itemWrapper.measure(
+                        View.MeasureSpec.makeMeasureSpec(item.getWidth(), View.MeasureSpec.EXACTLY),
                         ViewGroup.LayoutParams.WRAP_CONTENT
                 );
-                finalHeight = expandedContentWrapper.getMeasuredHeight();
+                finalHeight = itemWrapper.getMeasuredHeight();
             } else {
-                content.setVisibility(View.VISIBLE);
+                item.setVisibility(View.VISIBLE);
             }
 
             // 41.5:
@@ -229,27 +234,27 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                     float wrapperAlpha = expand ? animatedFraction : 1f - animatedFraction;
                     float contentAlpha = 1f - wrapperAlpha;
 
-                    // 41.5: Use % completion to set opacity level for content and expandedContentWrapper
-                    //      where content opacity changes inverse to wrapper opacity, creating a
+                    // 41.5: Use % completion to set opacity level for item and itemWrapper
+                    //      where item opacity changes inverse to wrapper opacity, creating a
                     //      cross-fade effect
-                    expandedContentWrapper.setAlpha(wrapperAlpha);
-                    content.setAlpha(contentAlpha);
+                    itemWrapper.setAlpha(wrapperAlpha);
+                    item.setAlpha(contentAlpha);
 
-                    // 41.6: Set the height of expandedContentWrapper, when animationFraction is
+                    // 41.6: Set the height of itemWrapper, when animationFraction is
                     //      completed, it is equal to size of WRAP_CONTENT, else get height as
                     //      a changing animated value.
-                    expandedContentWrapper.getLayoutParams().height = animatedFraction == 1f ?
+                    itemWrapper.getLayoutParams().height = animatedFraction == 1f ?
                             ViewGroup.LayoutParams.WRAP_CONTENT :
                             (Integer) valueAnimator.getAnimatedValue();
 
                     //41.7: requestLayout() is called by a view on itself to update when it may
                     //      no longer fit within its current bounds.
-                    expandedContentWrapper.requestLayout();
+                    itemWrapper.requestLayout();
                     if (animatedFraction == 1f) {
                         if (expand) {
-                            content.setVisibility(View.GONE);
+                            item.setVisibility(View.GONE);
                         } else {
-                            expandedContentWrapper.setVisibility(View.GONE);
+                            itemWrapper.setVisibility(View.GONE);
                         }
                     }
                 }
