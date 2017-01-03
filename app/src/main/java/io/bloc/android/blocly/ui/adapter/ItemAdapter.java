@@ -202,14 +202,14 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
             if (expand) {
                 // 41.3: Set startingHeight to height of preview content. Full length of content is
-                //      visible but transparent, animating from full tranparency to full opacity.
+                //      visible but transparent, animating from full transparency to full opacity.
                 startingHeight = finalHeight;
                 expandedContentWrapper.setAlpha(0f);
                 expandedContentWrapper.setVisibility(View.VISIBLE);
 
                 // 41.4: Determine the height of expansion using measure(int, int), which asks the
                 //      View to measure itself given the constraints provided. Constraint width to
-                //   ,    width of content, height is unlimited.
+                //      width of content, height is unlimited.
                 expandedContentWrapper.measure(
                         View.MeasureSpec.makeMeasureSpec(content.getWidth(), View.MeasureSpec.EXACTLY),
                         ViewGroup.LayoutParams.WRAP_CONTENT
