@@ -1,7 +1,7 @@
 package io.bloc.android.blocly.ui.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,7 +12,7 @@ import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends Activity {
+public class BloclyActivity extends AppCompatActivity {
 
     private ItemAdapter itemAdapter;
 
