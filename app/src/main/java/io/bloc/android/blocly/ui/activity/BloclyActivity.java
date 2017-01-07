@@ -30,7 +30,7 @@ public class BloclyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blocly);
 
-        // 42.4: Set the toolbar as the app bar for the activity
+        // 42.4: Set Toolbar as the ActionBar for the activity
         Toolbar toolbar = (Toolbar) findViewById(R.id.tb_activity_blocly);
         setSupportActionBar(toolbar);
 
@@ -48,7 +48,7 @@ public class BloclyActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         drawerLayout = (DrawerLayout) findViewById(R.id.dl_activity_blocly);
 
-        // 42.6:
+        // 42.6: Create a new ActionBarDrawerToggle and set DrawerLayout's DrawerListener
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, 0, 0);
         drawerLayout.addDrawerListener(drawerToggle);
     }
