@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="default_padding">8dp</dimen>
+    <dimen name="navigation_item_title_height">48dp</dimen>
+    <dimen name="navigation_item_horizontal_padding">16dp</dimen>
+</resources>
