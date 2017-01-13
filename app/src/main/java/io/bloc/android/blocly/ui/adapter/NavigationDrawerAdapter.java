@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
 
@@ -48,11 +47,8 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         RssFeed rssFeed = null;
 
-        // When binding each ViewHolder to a position, we recover its RssFeed object
-        // if it is found below the three primary navigation elements
-        // NavigationOption.values().length = total number of navigational elements, used to
-        // offset position into the full RssFeed array because the first RssFeed item is located
-        // at position 3 within the adapter but at position 0 in the original RssFeed array.
+        // 43.6: If view position is beyond NavigationOption, show RSS feeds
+        // The feedPosition is determined by taking position - 3 (number of NavigationOption)
         if(position >= NavigationOption.values().length){
             int feedPosition = position - NavigationOption.values().length;
             rssFeed = BloclyApplication.getSharedDataSource().getFeeds().get(feedPosition);
@@ -61,6 +57,8 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         viewHolder.update(position, rssFeed);
     }
 
+    // 43.4: getItemCount() will return number of NavigationOption w/ number of RSS feeds found from
+    //      DataSource, giving total of four items to display
     @Override
     public int getItemCount() {
         // Number of items our Adapter provides is returned by getItemCount()
@@ -85,12 +83,17 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         this.delegate = new WeakReference<NavigationDrawerAdapterDelegate>(delegate);
     }
 
+    // 43.4: ViewHolder describes a single item view and metadata about its place w/in RecyclerView
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         View topPadding;
         TextView title;
         View bottomPadding;
         View divider;
+
+        // 44.1: Track the position and RSS feed for each ViewHolder
+        int position;
+        RssFeed rssFeed;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -103,6 +106,11 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         }
 
         void update(int position, RssFeed rssFeed){
+
+            // Update these fields each time ViewHolder is updated
+            this.position = position;
+            this.rssFeed = rssFeed;
+
             // The ordinal() method returns the integer position of the enumerated value,
             // therefore NavigationOption.NAVIGATION_OPTION_INBOX.ordinal() == 0
             // The values() method recovers an array containing each enumerated value in order,
@@ -140,8 +148,17 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
 
         @Override
         public void onClick(View v) {
-            // Toast.makeText(Context context, CharSequence text, int duration)
-            Toast.makeText(v.getContext(), "Nothing... yet!", Toast.LENGTH_SHORT).show();
+            // 44.2: NavigationDrawerAdapter.this provides a reference to the NavigationDrawerAdapter
+            // Including NavigationDrawerAdapter w/in interface method 1) ensure method uniqueness
+            //      and 2) provides reference to delegating object
+            if (getDelegate() == null) {
+                return;
+            }
+            if (position < NavigationOption.values().length) {
+                getDelegate().didSelectNavigationOption(NavigationDrawerAdapter.this, NavigationOption.values()[position]);
+            } else {
+                getDelegate().didSelectFeed(NavigationDrawerAdapter.this, rssFeed);
+            }
         }
     }
 }
