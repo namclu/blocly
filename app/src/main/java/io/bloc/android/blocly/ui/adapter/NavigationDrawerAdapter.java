@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
@@ -23,6 +25,16 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         NAVIGATION_OPTION_FAVORITES,
         NAVIGATION_OPTION_ARCHIVED
     }
+
+    // 44.1: didSelectNavigationOption() invoked when user selects either Inbox, Favorites, or Archived
+    //      didSelectFeed() invoked when user selects an RSS feed
+    public static interface NavigationDrawerAdapterDelegate {
+        public void didSelectNavigationOption(NavigationDrawerAdapter adapter, NavigationOption navigationOption);
+        public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed);
+    }
+
+    // 44.1: WeakReference does not guarantee the object within it, leaving the object free to disappear at any moment.
+    WeakReference<NavigationDrawerAdapterDelegate> delegate;
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int position) {
@@ -57,6 +69,20 @@ public class NavigationDrawerAdapter extends RecyclerView.Adapter<NavigationDraw
         // This gives us a total of four items to display.
         return NavigationOption.values().length
                 + BloclyApplication.getSharedDataSource().getFeeds().size();
+    }
+
+    // 44.1: Getter and setter for delegate
+    // User WeakReference.get() to recover the object within. If original reference has been removed
+    //      this method will return null
+    public NavigationDrawerAdapterDelegate getDelegate() {
+        if (delegate == null) {
+            return null;
+        }
+        return delegate.get();
+    }
+
+    public void setDelegate(NavigationDrawerAdapterDelegate delegate) {
+        this.delegate = new WeakReference<NavigationDrawerAdapterDelegate>(delegate);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
