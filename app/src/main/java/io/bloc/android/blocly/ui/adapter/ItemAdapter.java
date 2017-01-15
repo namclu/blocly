@@ -18,6 +18,8 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.lang.ref.WeakReference;
+
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.DataSource;
@@ -30,6 +32,13 @@ import io.bloc.android.blocly.api.model.RssItem;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterViewHolder> {
 
     private static String TAG = ItemAdapter.class.getSimpleName();
+
+    // Assign 44:
+    public static interface ItemAdapterDelegate {
+        public void didSelectView(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded);
+    }
+
+    WeakReference<ItemAdapterDelegate> itemAdapterDelegate;
 
     @Override
     // Required method which asks us to create and return a ViewHolder, specifically one
@@ -52,6 +61,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     @Override
     public int getItemCount(){
         return BloclyApplication.getSharedDataSource().getItems().size();
+    }
+
+    /*
+     * Assign 44 - getters and setters for itemAdapterDelegate
+     */
+    public ItemAdapterDelegate getItemAdapterDelegate() {
+        if (itemAdapterDelegate == null) {
+            return null;
+        }
+        return itemAdapterDelegate.get();
+    }
+
+    public void setItemAdapterDelegate(ItemAdapterDelegate itemAdapterDelegate) {
+            this.itemAdapterDelegate = new WeakReference<ItemAdapterDelegate>(itemAdapterDelegate);
     }
 
     // Extends RecyclerView.ViewHolder as RecyclerView.ViewHolder is an abstract class
@@ -171,13 +194,19 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         // Abstract and only method of View.OnClickListener
         public void onClick(View view) {
 
-            if(view == itemView){
+            if (getItemAdapterDelegate() == null) {
+                return;
+            }
+            if (view == itemView) {
+                animateContent(!contentExpanded);
+            }
+            /*if(view == itemView){
                 animateContent(!contentExpanded);
             } else{
                 // Clicking visitSite will show a Toast.
                 // makeText(Context context, CharSequence text, int duration).show();
                 Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
-            }
+            }*/
         }
 
         @Override
@@ -220,8 +249,13 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                 );
                 // getMeasuredHeight() provides the height (in pixels) that expandedContentWrapper wishes to be
                 finalHeight = expandedContentWrapper.getMeasuredHeight();
+
+                // Assign 44: inform delegate that content has been expanded
+                getItemAdapterDelegate().didSelectView(ItemAdapter.this, rssItem, expand);
             } else {
                 content.setVisibility(View.VISIBLE);
+                // Assign 44: inform delegate that content has been contracted
+                getItemAdapterDelegate().didSelectView(ItemAdapter.this, rssItem, expand);
             }
 
             //  AnimatorUpdateListener receives updates during an animation

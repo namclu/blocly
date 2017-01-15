@@ -14,13 +14,15 @@ import android.widget.Toast;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
+import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
  */
-public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
+public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
+        ItemAdapter.ItemAdapterDelegate{
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
@@ -43,7 +45,8 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
 
         // 44.3:
         navigationDrawerAdapter.setDelegate(this);
-        
+        itemAdapter.setItemAdapterDelegate(this);
+
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
         RecyclerView navigationRecyclerView = (RecyclerView) findViewById(R.id.rv_nav_activity_blocly);
@@ -110,5 +113,18 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
         drawerLayout.closeDrawers();
         Toast.makeText(this, "Show RSS items from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    /*
+     * Assign 44: ItemAdapterDelegate
+     */
+    @Override
+    public void didSelectView(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded) {
+        if (contentExpanded) {
+            Toast.makeText(this, "RssItem expanded", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "RssItem contracted", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }
