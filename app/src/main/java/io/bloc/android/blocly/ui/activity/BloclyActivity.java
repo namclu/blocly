@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import io.bloc.android.blocly.R;
@@ -126,5 +127,10 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
             Toast.makeText(this, "RssItem contracted", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    @Override
+    public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view) {
+        Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
     }
 }

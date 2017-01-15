@@ -36,6 +36,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     // Assign 44:
     public static interface ItemAdapterDelegate {
         public void didSelectView(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded);
+        public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view);
     }
 
     WeakReference<ItemAdapterDelegate> itemAdapterDelegate;
@@ -199,6 +200,9 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
             }
             if (view == itemView) {
                 animateContent(!contentExpanded);
+            } else {
+                // Assign 44: inform delegate that Visit Site was clicked
+                getItemAdapterDelegate().didSelectVisitSite(ItemAdapter.this, rssItem, view);
             }
             /*if(view == itemView){
                 animateContent(!contentExpanded);
