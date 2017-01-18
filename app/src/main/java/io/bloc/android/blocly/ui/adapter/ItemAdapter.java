@@ -37,6 +37,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
     public static interface ItemAdapterDelegate {
         public void didSelectView(ItemAdapter itemAdapter, RssItem rssItem, boolean contentExpanded);
         public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view);
+        public void didSelectFavorite(String TAG, boolean isChecked);
+        public void didSelectArchive(String TAG, boolean isChecked);
     }
 
     WeakReference<ItemAdapterDelegate> itemAdapterDelegate;
@@ -194,28 +196,32 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
         @Override
         // Abstract and only method of View.OnClickListener
         public void onClick(View view) {
-
+            // Assign 44: If delegate == null, exit out of method
             if (getItemAdapterDelegate() == null) {
                 return;
             }
+
             if (view == itemView) {
                 animateContent(!contentExpanded);
             } else {
                 // Assign 44: inform delegate that Visit Site was clicked
                 getItemAdapterDelegate().didSelectVisitSite(ItemAdapter.this, rssItem, view);
             }
-            /*if(view == itemView){
-                animateContent(!contentExpanded);
-            } else{
-                // Clicking visitSite will show a Toast.
-                // makeText(Context context, CharSequence text, int duration).show();
-                Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
-            }*/
         }
 
         @Override
         public void onCheckedChanged(CompoundButton buttonButton, boolean isChecked) {
-            Log.v(TAG, "Checked changed to: " + isChecked);
+            // Assign 44: If delegate == null, exit out of method
+            if (getItemAdapterDelegate() == null) {
+                return;
+            }
+
+            // Assign 44: Notify delegate when archive or favorite button is selected
+            if (buttonButton.equals(archiveCheckBox)) {
+                getItemAdapterDelegate().didSelectArchive(ItemAdapter.TAG, isChecked);
+            } else {
+                getItemAdapterDelegate().didSelectFavorite(ItemAdapter.TAG, isChecked);
+            }
         }
 
         /*

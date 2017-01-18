@@ -9,6 +9,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -132,5 +133,15 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     @Override
     public void didSelectVisitSite(ItemAdapter itemAdapter, RssItem rssItem, View view) {
         Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void didSelectFavorite(String TAG, boolean isChecked) {
+        Log.v(TAG, "Favorite checked changed to: " + isChecked);
+    }
+
+    @Override
+    public void didSelectArchive(String TAG, boolean isChecked) {
+        Log.v(TAG, "Archive checked changed to: " + isChecked);
     }
 }
