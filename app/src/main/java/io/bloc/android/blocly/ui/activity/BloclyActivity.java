@@ -9,8 +9,10 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import io.bloc.android.blocly.R;
@@ -65,7 +67,23 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         drawerLayout = (DrawerLayout) findViewById(R.id.dl_activity_blocly);
 
         // ActionBarDrawerToggle(activity, drawerLayout, int openDrawerContentDescRes, int closeDrawerContentDescRes)
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, 0, 0);
+        // 45.5: Add anonymous classes onDrawerClosed() and onDrawerOpened() so if left nav drawer
+        //      is open, right actionbar items will not be visible. invalidateOptionsMenu() tears
+        //      down current menu structure and invokes onCreateOptionsMenu() again.
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, 0, 0){
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                invalidateOptionsMenu();
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                invalidateOptionsMenu();
+            }
+        };
         drawerLayout.addDrawerListener(drawerToggle);
     }
 
@@ -106,6 +124,10 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // 45.6: To avoid inflating menu when drawer is open, we validate here
+        if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            return super.onCreateOptionsMenu(menu);
+        }
         getMenuInflater().inflate(R.menu.blocly, menu);
         return super.onCreateOptionsMenu(menu);
     }
