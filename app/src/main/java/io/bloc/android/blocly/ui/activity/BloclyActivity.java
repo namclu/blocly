@@ -1,6 +1,7 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -9,11 +10,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
@@ -31,6 +33,9 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     private DrawerLayout drawerLayout;
     // Add to use NavigationDrawer
     private NavigationDrawerAdapter navigationDrawerAdapter;
+    // 45.6: Add fields to track Menu object and represent overflow button
+    private Menu menu;
+    private View overflowButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +86,50 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
             @Override
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                invalidateOptionsMenu();
+                if (overflowButton != null) {
+                    // 45.7a: When the drawer opens, enable both the menu items and overflow buttons
+                    overflowButton.setEnabled(false);
+                }
+                if (menu == null) {
+                    return;
+                }
+                for (int i = 0; i < menu.size(); i++) {
+                    // 45.7b: When the drawer opens, enable both the menu items and overflow buttons
+                    menu.getItem(i).setEnabled(false);
+                }
+            }
+
+            // 45.8: no direct way of recovering a reference to the overflow button as it is not
+            //      included in either the Menu or ActionBar API.
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                super.onDrawerSlide(drawerView, slideOffset);
+                if (overflowButton == null) {
+                    // 45.8:
+                    ArrayList<View> foundViews = new ArrayList<View>();
+                    getWindow().getDecorView().findViewsWithText(foundViews,
+                            getString(R.string.abc_action_menu_overflow_description),
+                            View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+                    if (foundViews.size() > 0) {
+                        overflowButton = foundViews.get(0);
+                    }
+                }
+                // 45.9a: onDrawerSlide() invoked by DrawerLayout as drawer moves. Use this proerpty
+                //      to set opacity level of action item and overflow buttons
+                if (overflowButton != null) {
+                    overflowButton.setAlpha(1f - slideOffset);
+                }
+                if (menu == null) {
+                    return;
+                }
+                for (int i = 0; i < menu.size(); i++) {
+                    MenuItem item = menu.getItem(i);
+                    Drawable icon = item.getIcon();
+                    if (icon != null) {
+                        // 45.9b: see 45.9a
+                        icon.setAlpha((int) ((1f - slideOffset) * 255));
+                    }
+                }
             }
         };
         drawerLayout.addDrawerListener(drawerToggle);
@@ -124,11 +172,9 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // 45.6: To avoid inflating menu when drawer is open, we validate here
-        if (drawerLayout.isDrawerOpen(Gravity.LEFT)) {
-            return super.onCreateOptionsMenu(menu);
-        }
+        // 45.6: Removed drawer check and save a reference to the Menu object
         getMenuInflater().inflate(R.menu.blocly, menu);
+        this.menu = menu;
         return super.onCreateOptionsMenu(menu);
     }
 
