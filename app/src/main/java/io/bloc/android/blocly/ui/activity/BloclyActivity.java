@@ -114,7 +114,7 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
                         overflowButton = foundViews.get(0);
                     }
                 }
-                // 45.9a: onDrawerSlide() invoked by DrawerLayout as drawer moves. Use this proerpty
+                // 45.9a: onDrawerSlide() invoked by DrawerLayout as drawer moves. Use this property
                 //      to set opacity level of action item and overflow buttons
                 if (overflowButton != null) {
                     overflowButton.setAlpha(1f - slideOffset);
