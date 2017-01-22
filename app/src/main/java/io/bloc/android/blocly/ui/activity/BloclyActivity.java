@@ -9,6 +9,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -92,7 +93,21 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         if(drawerToggle.onOptionsItemSelected(item)){
             return true;
         }
+        // 45.4: Display Toast each time Actionbar menu is pressed
+        Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+
         return super.onOptionsItemSelected(item);
+    }
+
+    /*
+     * 45.4: Inflating the menu
+     * Menus belong to controllers, which are normally Activity classes. Each Activity is
+     *      responsible for declaring its menu items.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.blocly, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     /*

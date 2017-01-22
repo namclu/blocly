@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 45.1:"android" is default namespace. "app" namespace add reference attributes found in other libraries -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- 45.2: orderInCategory orders items from least to greatest -->
+    <item android:id="@+id/action_share"
+        android:icon="@drawable/ic_share_selector"
+        android:title="@string/menu_share"
+        android:orderInCategory="0"
+        app:showAsAction="ifRoom"/>
+
+    <!-- 45.3: showAsAction="never" to guarantee action_search is always present-->
+    <item android:id="@+id/action_search"
+          android:icon="@drawable/ic_search_selector"
+          android:title="@string/menu_search"
+          android:orderInCategory="1"
+          app:showAsAction="always"/>
+
+    <item android:id="@+id/action_refresh"
+          android:title="@string/menu_refresh"
+          android:orderInCategory="2"
+          app:showAsAction="never"/>
+
+    <item android:id="@+id/action_mark_as_read"
+          android:title="@string/mark_as_read"
+          android:orderInCategory="3"
+          app:showAsAction="never"/>
+</menu>
