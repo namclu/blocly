@@ -24,7 +24,7 @@
           app:showAsAction="never"/>
 
     <item android:id="@+id/action_mark_as_read"
-          android:title="@string/mark_as_read"
+          android:title="@string/menu_mark_as_read"
           android:orderInCategory="3"
           app:showAsAction="never"/>
 </menu>
