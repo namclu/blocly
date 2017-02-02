@@ -17,15 +17,22 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
 import io.bloc.android.blocly.api.model.RssFeed;
+import io.bloc.android.blocly.api.model.RssItem;
 import io.bloc.android.blocly.ui.adapter.ItemAdapter;
 import io.bloc.android.blocly.ui.adapter.NavigationDrawerAdapter;
 
 /**
  * Created by namlu on 14-Jun-16.
+ *
+ * 46.4: Implements ItemAdapter.DataSource and ItemAdapter.Delegate
  */
-public class BloclyActivity extends AppCompatActivity implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate{
+public class BloclyActivity extends AppCompatActivity
+        implements NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
+            ItemAdapter.DataSource,
+            ItemAdapter.Delegate{
 
     private ItemAdapter itemAdapter;
     // Add to use DrawerLayout
@@ -47,6 +54,10 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
         setSupportActionBar(toolbar);
 
         itemAdapter = new ItemAdapter();
+        // 46.2: Set BloclyActivity as ItemAdapter's delegate and data source
+        itemAdapter.setDataSource(this);
+        itemAdapter.setDelegate(this);
+
         navigationDrawerAdapter = new NavigationDrawerAdapter();
 
         // 44.3:
@@ -193,5 +204,55 @@ public class BloclyActivity extends AppCompatActivity implements NavigationDrawe
     public void didSelectFeed(NavigationDrawerAdapter adapter, RssFeed rssFeed) {
         drawerLayout.closeDrawers();
         Toast.makeText(this, "Show RSS items from " + rssFeed.getTitle(), Toast.LENGTH_SHORT).show();
+    }
+
+    /*
+     * 46.2: ItemAdapter.DataSource
+     */
+    @Override
+    public RssItem getRssItem(ItemAdapter itemAdapter, int position) {
+        return BloclyApplication.getSharedDataSource().getItems().get(position);
+    }
+
+    @Override
+    public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
+        return BloclyApplication.getSharedDataSource().getFeeds().get(0);
+    }
+
+    @Override
+    public int getItemCount(ItemAdapter itemAdapter) {
+        return  BloclyApplication.getSharedDataSource().getItems().size();
+    }
+
+    /*
+     * 46.2: ItemAdapter.Delegate
+     */
+    @Override
+    public void onItemClicked(ItemAdapter itemAdapter, RssItem rssItem) {
+        int positionToExpand = -1;
+        int positionToContract = -1;
+
+        // 46.3: If item has been previously expanded, get its position so that it can be contracted later
+        if (itemAdapter.getExpandedItem() != null) {
+            positionToContract = BloclyApplication.getSharedDataSource().getItems().indexOf(itemAdapter.getExpandedItem());
+        }
+
+        // 46.4: Upon clicking an item, if item has not been expanded yet, then expand it and note
+        // its position. Otherwise contract it by setting ItemAdapter expanded item to 'null'.
+        if (itemAdapter.getExpandedItem() != rssItem) {
+            positionToExpand = BloclyApplication.getSharedDataSource().getItems().indexOf(rssItem);
+            itemAdapter.setExpandedItem(rssItem);
+        } else {
+            itemAdapter.setExpandedItem(null);
+        }
+
+        // 46.5: When either positionToExpand or positionToContract is no longer 'null', then
+        // notifyItemChanged() will ...
+        if (positionToContract > -1) {
+            itemAdapter.notifyItemChanged(positionToContract);
+        }
+        if (positionToExpand > -1) {
+            itemAdapter.notifyItemChanged(positionToExpand);
+        }
     }
 }
