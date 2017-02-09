@@ -41,6 +41,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
 
     public static interface Delegate{
         public void onItemClicked(ItemAdapter itemAdapter, RssItem rssItem);
+        // 48.8: Add to power "Visit Site" button
+        public void onVisitClicked(ItemAdapter itemAdapter, RssItem rssItem);
     }
 
     private static String TAG = ItemAdapter.class.getSimpleName();
@@ -276,9 +278,11 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemAdapterVie
                     getDelegate().onItemClicked(ItemAdapter.this, rssItem);
                 }
             } else{
-                // Clicking visitSite will show a Toast.
-                // makeText(Context context, CharSequence text, int duration).show();
-                Toast.makeText(view.getContext(), "Visit " + rssItem.getUrl(), Toast.LENGTH_SHORT).show();
+                // 48.8: Clicking Visit Site will pass information needed to launch web browser
+                // to the calling app
+                if (getDelegate() != null) {
+                    getDelegate().onVisitClicked(ItemAdapter.this, rssItem);
+                }
             }
         }
 
