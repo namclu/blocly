@@ -104,6 +104,14 @@ public class RssItemTable extends Table {
 
     private static final String NAME = "rss_items";
 
+    // 55.9: fetchItemsForFeed() will retrieve every item associated with a feed. The items will
+    // be returned in reverse chronological order (latest first)
+    public static Cursor fetchItemsForFeed(SQLiteDatabase readOnlyDatabase, long feedRowId) {
+        return readOnlyDatabase.query(true, NAME, null, COLUMN_RSS_FEED + " = ?",
+                new String[]{String.valueOf(feedRowId)},
+                null, null, COLUMN_PUB_DATE + "DESC", null);
+    }
+
     private static final String COLUMN_LINK = "link";
     private static final String COLUMN_TITLE = "title";
     private static final String COLUMN_DESCRIPTION = "description";

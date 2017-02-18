@@ -1,15 +1,14 @@
 package io.bloc.android.blocly.ui.activity;
 
 import android.animation.ValueAnimator;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -23,6 +22,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.bloc.android.blocly.BloclyApplication;
 import io.bloc.android.blocly.R;
@@ -39,8 +39,11 @@ public class BloclyActivity extends AppCompatActivity
         implements
         NavigationDrawerAdapter.NavigationDrawerAdapterDelegate,
         ItemAdapter.DataSource,
-        ItemAdapter.Delegate{
+        ItemAdapter.Delegate,
+        NavigationDrawerAdapter.NavigationDrawerAdapterDataSource{
 
+    // 55.12: Reference to new SwipeRefreshLayout
+    private SwipeRefreshLayout swipeRefreshLayout;
     // Add external reference to RecyclerView
     private RecyclerView recyclerView;
     private ItemAdapter itemAdapter;
@@ -52,16 +55,9 @@ public class BloclyActivity extends AppCompatActivity
     // Add fields to track Menu object and Overflow button
     private Menu menu;
     private View overflowButton;
-
-    // 54: Custom BroadcastReceiver which, after receiving the Intent,
-    //      resets the data found in itemAdapter and navigationDrawerAdapter
-    private BroadcastReceiver dataSourceBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            itemAdapter.notifyDataSetChanged();
-            navigationDrawerAdapter.notifyDataSetChanged();
-        }
-    };
+    // 55:
+    private List<RssFeed> allFeeds = new ArrayList<RssFeed>();
+    private List<RssItem> currentItems = new ArrayList<RssItem>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,10 +73,63 @@ public class BloclyActivity extends AppCompatActivity
         itemAdapter.setDataSource(this);
         itemAdapter.setDelegate(this);
 
+        // 55.13: Set the SwipeRefreshLayout's color
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_activity_blocly);
+        swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.primary));
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                BloclyApplication.getSharedDataSource().fetchNewFeed("http://feeds.feedburner.com/androidcentral?format=xml",
+                        // 55.14: Fetch a new feed and provide in-line Callback interface to receive results
+                        new DataSource.Callback<RssFeed>() {
+                            @Override
+                            public void onSuccess(RssFeed rssFeed) {
+                                // 55.15a: onSuccess() method is asynchronous, therefore need to check
+                                // if user has exited before onSuccess() was invoked
+                                if (isFinishing() || isDestroyed()) {
+                                    return;
+                                }
+                                allFeeds.add(rssFeed);
+                                navigationDrawerAdapter.notifyDataSetChanged();
+                                BloclyApplication.getSharedDataSource().fetchItemsForFeed(rssFeed,
+                                        new DataSource.Callback<List<RssItem>>() {
+                                            @Override
+                                            public void onSuccess(List<RssItem> rssItems) {
+                                                // 55.15b:
+                                                if (isFinishing() || isDestroyed()) {
+                                                    return;
+                                                }
+                                                currentItems.addAll(0, rssItems);
+                                                // 55.16: notifyItemRangeInserted(int, int) uses ItemAdapter to add
+                                                // each Rss item to RecyclerView individually
+                                                itemAdapter.notifyItemRangeInserted(0, rssItems.size());
+                                                // 55.17a: programmatically disable the refresh animation
+                                                swipeRefreshLayout.setRefreshing(false);
+                                            }
+
+                                            @Override
+                                            public void onError(String errorMessage) {
+                                                // 55.17b: programmatically disable the refresh animation
+                                                swipeRefreshLayout.setRefreshing(false);
+                                            }
+                                        });
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                // 55.17c: programmatically disable the refresh animation
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+                        });
+            }
+        });
+
         navigationDrawerAdapter = new NavigationDrawerAdapter();
 
         // Set BloclyActivity (this) as NavigationDrawerAdapter's delegate
         navigationDrawerAdapter.setDelegate(this);
+        // 55:
+        navigationDrawerAdapter.setDataSource(this);
 
         // A reference to the inflated RecyclerView instance from activity_blocly.xml
         recyclerView = (RecyclerView) findViewById(R.id.rv_activity_blocly);
@@ -95,10 +144,6 @@ public class BloclyActivity extends AppCompatActivity
         navigationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         navigationRecyclerView.setItemAnimator(new DefaultItemAnimator());
         navigationRecyclerView.setAdapter(navigationDrawerAdapter);
-
-        // 54: Register BroadcastReceivers before they can receive broadcasts
-        // registerReceiver(BroadcastReceiver receiver, IntentFiler filter)
-        registerReceiver(dataSourceBroadcastReceiver, new IntentFilter(DataSource.ACTION_DOWNLOAD_COMPLETED));
 
         // Recover the instance of ActionBar associated with ToolBar
         // and invoke setDisplayHomeAsUpEnabled(boolean) to allow this behavior
@@ -253,14 +298,6 @@ public class BloclyActivity extends AppCompatActivity
         return super.onCreateOptionsMenu(menu);
     }
 
-    // 54: All BroadcastReceivers must be unregistered before they are deallocated (garbage collected)
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(dataSourceBroadcastReceiver);
-    }
-
-
     /*NavigationDrawerAdapter Delegate*/
 
     @Override
@@ -287,19 +324,34 @@ public class BloclyActivity extends AppCompatActivity
         // getSharedDataSource() returns a DataSource
         // getItems() returns a List<RssItem>
         // get() returns a RssItem
-        return BloclyApplication.getSharedDataSource().getItems().get(position);
+        return currentItems.get(position);
     }
 
     @Override
     public RssFeed getRssFeed(ItemAdapter itemAdapter, int position) {
-        // getFeeds() returns a List<RssFeed>
-        // get() returns a RssFeed
-        return BloclyApplication.getSharedDataSource().getFeeds().get(0);
+        // 55:
+        RssItem rssItem = currentItems.get(position);
+        for (RssFeed feed : allFeeds) {
+            // 55.1: Compare RssItem's RSS feed ID to row identifier of every RssFeed in our list. If
+            // the matching model is found, then return it
+            if (rssItem.getRssFeedId() == feed.getRowId()) {
+                return feed;
+            }
+        }
+        return null;
     }
 
     @Override
     public int getItemCount(ItemAdapter itemAdapter) {
-        return BloclyApplication.getSharedDataSource().getItems().size();
+        return currentItems.size();
+    }
+
+    /*
+     * 55: NavigationDrawerAdapterDataSource
+     */
+    @Override
+    public List<RssFeed> getFeeds(NavigationDrawerAdapter adapter) {
+        return null;
     }
 
     /*
@@ -319,7 +371,7 @@ public class BloclyActivity extends AppCompatActivity
             // getSharedDataSource() returns a DataSource
             // getItems() returns a List<RssItem>
             // indexOf() returns an int
-            positionToContract = BloclyApplication.getSharedDataSource().getItems().indexOf(itemAdapter.getExpandedItem());
+            positionToContract = currentItems.indexOf(itemAdapter.getExpandedItem());
 
             // Only check the edge-case condition when both expanding and contracting Views are visible on screen
             // findViewByPosition() returns 'position' if View is currently onscreen, 'null' otherwise
@@ -331,7 +383,7 @@ public class BloclyActivity extends AppCompatActivity
 
         // When a new item is clicked, recover its position within the list and set it as the expanded item
         if(itemAdapter.getExpandedItem() != rssItem){
-            positionToExpand = BloclyApplication.getSharedDataSource().getItems().indexOf(rssItem);
+            positionToExpand = currentItems.indexOf(rssItem);
             itemAdapter.setExpandedItem(rssItem);
         }else{
             // If user clicks on the expanded item, contract it by resetting ItemAdapter's expanded item to null

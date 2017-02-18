@@ -36,6 +36,11 @@ public abstract class Table {
                 new String[] {String.valueOf(rowId)}, null, null, null, null);
     }
 
+    // 55: Convenience method to get the rowId
+    public static long getRowId(Cursor cursor) {
+        return getLong(cursor, COLUMN_ID);
+    }
+
     // 54: Returns a String object for the specified column parameter
     protected static String getString(Cursor cursor, String column) {
         int columnIndex = cursor.getColumnIndex(column);
