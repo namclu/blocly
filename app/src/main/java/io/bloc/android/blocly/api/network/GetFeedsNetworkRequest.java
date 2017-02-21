@@ -1,5 +1,7 @@
 package io.bloc.android.blocly.api.network;
 
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -31,6 +33,12 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
     private static final String XML_TAG_PUB_DATE = "pubDate";
     private static final String XML_TAG_GUID = "guid";
     private static final String XML_TAG_ENCLOSURE = "enclosure";
+
+    // 56.5: The <content:encoded> and <media:content> tags are used similar to <description>
+    // and <enclosure> respectively
+    private static final String XML_TAG_CONTENT_ENCODED = "content:encoded";
+    private static final String XML_TAG_MEDIA_CONTENT = "media:content";
+
     private static final String XML_ATTRIBUTE_URL = "url";
     private static final String XML_ATTRIBUTE_TYPE = "type";
 
@@ -77,6 +85,15 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                 for (int itemIndex = 0; itemIndex < allItemsNodes.getLength(); itemIndex++) {
                     String itemURL = null;
                     String itemTitle = null;
+
+                    // 56.3a: Stores the first image recovered from the HTML body, if any
+                    String itemImageURL = null;
+
+                    // 56.6:
+                    String itemContentEncodedText = null;
+                    String itemMediaURL = null;
+                    String itemMediaMIMEType = null;
+
                     String itemDescription = null;
                     String itemGUID = null;
                     String itemPubDate = null;
@@ -101,7 +118,11 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                         } else if (XML_TAG_TITLE.equalsIgnoreCase(tag)) {
                             itemTitle = tagNode.getTextContent();
                         } else if (XML_TAG_DESCRIPTION.equalsIgnoreCase(tag)) {
-                            itemDescription = tagNode.getTextContent();
+                            String descriptionText = tagNode.getTextContent();
+                            itemImageURL = parseImageFromHTML(descriptionText);
+                            // 56.4: Use parseTextFromHTML to strip unnecessary HTML tags and attributes,
+                            // leaving only text
+                            itemDescription = parseTextFromHTML(descriptionText);
                         } else if (XML_TAG_ENCLOSURE.equalsIgnoreCase(tag)) {
                             // Retrieve a map of all attributes and recover both the url and type entries
                             // Enclosure tag is different, its data comes in the form of attributes
@@ -113,7 +134,37 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                         } else if (XML_TAG_GUID.equalsIgnoreCase(tag)) {
                             itemGUID = tagNode.getTextContent();
                         }
+                        // 56.7: Treat <content:encoded> tag exactly like the <description> tag. Assume
+                        // it is composed of HTML content and parse its plain text and first image
+                        else if (XML_TAG_CONTENT_ENCODED.equalsIgnoreCase(tag)) {
+                            String contentEncoded = tagNode.getTextContent();
+                            itemImageURL = parseImageFromHTML(contentEncoded);
+                            itemContentEncodedText = parseTextFromHTML(contentEncoded);
+                        }
+                        // 56.8: Treat <media:content> tag exactly like the <enclosure> tag.
+                        else if (XML_TAG_MEDIA_CONTENT.equalsIgnoreCase(tag)) {
+                            NamedNodeMap mediaAttributes = tagNode.getAttributes();
+                            itemMediaURL = mediaAttributes.getNamedItem(XML_ATTRIBUTE_URL).getTextContent();
+                            itemMediaMIMEType = mediaAttributes.getNamedItem(XML_ATTRIBUTE_TYPE).getTextContent();
+                        }
                     }
+                    // 56.3b: Use itemImageURL if and only if the RSS item did not provide enclosure
+                    if (itemEnclosureURL == null) {
+                        itemEnclosureURL = itemImageURL;
+                    }
+                    // 56.9: catches the case where an image was not retrieved from the description
+                    // or content. We assign the values, if any, discovered within the  <media:content> tag
+                    if (itemEnclosureURL == null) {
+                        itemEnclosureURL = itemImageURL;
+                        itemEnclosureMIMEType = itemMediaMIMEType;
+                    }
+                    // 56.10: replace the description with the content encoded text. We make the
+                    // assumption that the data found in <content:encoded> is more robust than
+                    // what was provided in <description>.
+                    if (itemContentEncodedText != null) {
+                        itemDescription = itemContentEncodedText;
+                    }
+
                     // List<ItemResponse> needed for FeedResponse
                     responseItems.add(new ItemResponse(itemURL, itemTitle, itemDescription,
                             itemGUID, itemPubDate, itemEnclosureURL, itemEnclosureMIMEType));
@@ -153,6 +204,26 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
         }
         return null;
     }
+
+    // 56.1: Strips the HTML body of any text that's not displayed to user, including tag,
+    // attribute, etc. This is the text to be presented to user as RSS item's content
+    static String parseTextFromHTML(String htmlString) {
+        org.jsoup.nodes.Document document = Jsoup.parse(htmlString);
+        return document.body().text();
+    }
+
+    // 56.2: Pulls every img tag from HTML body, then returns source URL of the very first image. The
+    // assumption is the first image in HTML body is the headline image.
+    static String parseImageFromHTML(String htmlString) {
+        org.jsoup.nodes.Document document = Jsoup.parse(htmlString);
+        Elements imgElements = document.select("img");
+
+        if (imgElements.isEmpty()) {
+            return null;
+        }
+        return imgElements.attr("src");
+    }
+
 
     // Returns the objects contained underneath the <channel>...<channel> tags of an XML doc
     // and a List<ItemResponse>
