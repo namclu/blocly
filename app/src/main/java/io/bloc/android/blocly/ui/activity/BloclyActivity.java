@@ -83,8 +83,9 @@ public class BloclyActivity extends AppCompatActivity
             public void onRefresh() {
                 // 55: Fetch a new feed and provide an in-line Callback interface to
                 //      receive the results
-                BloclyApplication.getSharedDataSource().fetchNewFeed("http://feeds.feedburner.com/androidcentral?format=xml",
+                // BloclyApplication.getSharedDataSource().fetchNewFeed("http://feeds.feedburner.com/androidcentral?format=xml",
                 // BloclyApplication.getSharedDataSource().fetchNewFeed("http://feeds.ign.com/ign/all?format=xml",
+                BloclyApplication.getSharedDataSource().fetchNewFeed("http://www.abc.net.au/radionational/feed/3726138/rss.xml",
                         new DataSource.Callback<RssFeed>() {
 
                             @Override

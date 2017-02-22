@@ -1,5 +1,7 @@
 package io.bloc.android.blocly.api.network;
 
+import android.util.Log;
+
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.w3c.dom.Document;
@@ -146,6 +148,15 @@ public class GetFeedsNetworkRequest extends NetworkRequest <List<GetFeedsNetwork
                             NamedNodeMap mediaAttributes = tagNode.getAttributes();
                             itemMediaURL = mediaAttributes.getNamedItem(XML_ATTRIBUTE_URL).getTextContent();
                             itemMediaMIMEType = mediaAttributes.getNamedItem(XML_ATTRIBUTE_TYPE).getTextContent();
+                        }
+                        // Assign: extract the image URL
+                        else if ("image".equalsIgnoreCase(tag)) {
+                            NamedNodeMap enclosureAttributes = tagNode.getAttributes();
+                            itemEnclosureURL = enclosureAttributes.getNamedItem(XML_ATTRIBUTE_URL).getTextContent();
+                            itemImageURL = itemEnclosureURL;
+                            //String attributeUrl = tagNode.getBaseURI();
+                            //itemImageURL = attributeUrl;
+                            Log.v("URL = ", itemImageURL);
                         }
                     }
                     // 56.3b: Use itemImageURL if and only if the RSS item did not provide enclosure
