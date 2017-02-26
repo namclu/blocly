@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -61,6 +62,10 @@ public class BloclyActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // 59.0: Start of debug class
+        Debug.startMethodTracing("BloclyActivity");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blocly);
 
@@ -305,6 +310,13 @@ public class BloclyActivity extends AppCompatActivity
         // Invocation to use animateShareItem()
         animateShareItem(itemAdapter.getExpandedItem() != null);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    // 59.0: Stop of debug class
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Debug.stopMethodTracing();
     }
 
     /*

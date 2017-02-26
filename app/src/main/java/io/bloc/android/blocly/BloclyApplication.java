@@ -41,7 +41,7 @@ public class BloclyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sharedInstance = this;
-        dataSource = new DataSource();
+        dataSource = new DataSource(this);
 
         // DisplayImageOptions class is composed of settings which pertain to each image loading request
         // We create a default instance of these options to be used each time Blocly requests an image.
