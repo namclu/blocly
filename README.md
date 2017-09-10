@@ -42,4 +42,4 @@ Directory Name: <Name of the repository>
 
 ## Screenshots
 
-<img src="/screenshots/blocly_expand_view.gif" width="280" height="480"> <img src="/screenshots/blocly_visit_site.gif" width="280" height="480">
+<img src="/screenshots/blocly_01.gif" width="280" height="480">
